@@ -289,6 +289,8 @@ flowchart TD
 
 따라서 Codex는 제공된 시각 자료를 먼저 읽고, 화면의 의미와 전이 흐름을 추론한 뒤 Mermaid로 사용자에게 확인받아야 한다. Figma 플러그인을 우선 사용할 수 있지만 필수는 아니다. 링크, 스크린샷, 설명 기반 경로도 선택 가능하다.
 
+Figma 원본에 화면 프레임, 이미지, 아이콘, 로고, 일러스트, 제품 화면, 사진, 텍스처 같은 시각 에셋이 포함된 경우에는 구현자가 직접 비슷하게 그리거나 재구성하지 않는다. 구현 전에 필요한 에셋을 식별하고, Figma 접근이 가능하면 브라우저에서 Figma OAuth 승인을 거친 뒤 CLI가 REST API로 노드 JSON, 화면 이미지, image fill 원본을 직접 내려받는다. 에셋 확보가 불가능하면 문서에 사유와 대체 방식을 남기고 사용자 확인을 받은 뒤 임시 구현을 선택한다.
+
 ### 입력
 
 - Figma 링크 여러 개
@@ -312,17 +314,20 @@ flowchart TD
 flowchart TD
     A["사용자: Figma 링크 전달"] --> B["Codex: 모든 링크 읽기"]
     B --> C["Codex: 화면 이름/역할 추출"]
-    C --> D["Codex: 추정 화면 전이 작성"]
-    D --> E["Codex: Mermaid 플로우 제시"]
-    E --> F["사용자: 전이/요소/조건 피드백"]
-    F --> G["Codex: <system-temp>/codex-workflow/YYYYMMDD-HHMM-feat-<topic>-ui-workflow.md 갱신"]
-    G --> H{"흐름 확정?"}
-    H -- "아니오" --> E
-    H -- "예" --> I["Codex: 단일 UI 스펙/구현 문서 작성"]
-    I --> J["사용자: 구현 방식 피드백"]
-    J --> K{"문서 확정?"}
-    K -- "아니오" --> I
-    K -- "예" --> L["사용자: 이 문서 구현해줘"]
+    C --> D["Codex: 필요한 Figma 에셋 식별"]
+    D --> E["사용자: OAuth 권한 승인 확인"]
+    E --> F["Codex: CLI로 REST API 에셋 수집"]
+    F --> G["Codex: 추정 화면 전이 작성"]
+    G --> H["Codex: Mermaid 플로우 제시"]
+    H --> I["사용자: 전이/요소/조건 피드백"]
+    I --> J["Codex: <system-temp>/codex-workflow/YYYYMMDD-HHMM-feat-<topic>-ui-workflow.md 갱신"]
+    J --> K{"흐름 확정?"}
+    K -- "아니오" --> H
+    K -- "예" --> L["Codex: 단일 UI 스펙/구현 문서 작성"]
+    L --> M["사용자: 구현 방식 피드백"]
+    M --> N{"문서 확정?"}
+    N -- "아니오" --> L
+    N -- "예" --> O["사용자: 이 문서 구현해줘"]
 ```
 
 ### 플러그인 동작 규칙
@@ -334,6 +339,13 @@ flowchart TD
 - Mermaid 차트에는 “로그인 화면”, “프로필 설정 화면”처럼 의미 기반 이름을 쓴다.
 - 화면 전이는 `사용자 액션`, `조건`, `다음 화면`으로 기록한다.
 - 사용자가 “그 화면으로 넘어가면 안 된다”라고 말하면 전이 규칙을 즉시 수정한다.
+- Figma 원본의 시각 에셋은 직접 구현하기 전에 먼저 브라우저 OAuth와 REST API 기반 CLI로 다운로드 또는 export 가능 여부를 확인한다.
+- 직접 구현은 단순 도형, 레이아웃, 텍스트 스타일처럼 코드로 충실히 재현 가능한 요소에 한정한다.
+- 에셋을 확보하지 못한 경우 필요한 에셋, 실패 사유, 대체 구현 방식을 문서에 남기고 사용자에게 확인한다.
+- OAuth 권한 승인은 대상 Figma 계정, scope, redirect URL을 사용자에게 확인한 뒤 진행한다.
+- CLI는 `file_key`와 `node-id`를 Figma 링크에서 파싱하고, `file_content:read` scope의 Bearer token으로 파일 구조, 노드, 화면 이미지, image fill 원본을 수집한다.
+- CLI는 `GET /v1/files/:key`, `GET /v1/files/:key/nodes?ids=...`, `GET /v1/images/:key?ids=...`, `GET /v1/files/:key/images`를 우선 사용한다.
+- OAuth token, refresh token, client secret은 로그, 문서, 커밋, PR 본문에 남기지 않는다.
 - 구현 전에는 기존 라우팅, 컴포넌트 구조, 디자인 시스템을 확인한다.
 
 ### Mermaid 예시
@@ -357,6 +369,10 @@ flowchart TD
 ## 추정 화면 전이
 
 ## 화면별 핵심 요소
+
+## 필요한 Figma 에셋
+
+## Figma REST API 수집 계획
 
 ## 사용자 확인 필요
 
@@ -444,6 +460,7 @@ flowchart TD
 - 복합 요청의 질문 순서는 사용자가 요청한 순서를 따른다.
 - 모든 모듈은 기본적으로 활성화 가능 상태이며, 사용자가 명시적으로 비활성화한 경우에만 제외한다.
 - Figma 플로우는 Figma 플러그인을 우선 선택할 수 있지만 필수는 아니다. 링크/스크린샷/설명 기반 경로도 선택 가능하다.
+- Figma 플로우에서 원본 시각 에셋이 있으면 직접 재구현하기 전에 브라우저 OAuth와 REST API 기반 CLI로 다운로드 또는 export를 먼저 시도한다.
 - 최종 단일 문서의 파일명은 사용자가 명시하면 그 이름을 따른다. 사용자가 명시하지 않으면 LLM이 작업 의미를 반영해 알아서 지정한다.
 
 ## 권장 다음 단계
