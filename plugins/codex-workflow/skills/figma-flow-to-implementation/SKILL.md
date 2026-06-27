@@ -14,7 +14,7 @@ description: 사용자가 Figma 링크, 스크린샷, 시각 자료를 제공하
 5. Figma 접근이 가능하면 브라우저에서 Figma OAuth 승인을 거친 뒤 CLI로 REST API에서 필요한 노드 JSON, 화면 이미지, 에셋을 직접 내려받습니다.
 6. 추정한 전이를 Mermaid 흐름도로 작성합니다.
 7. 사용자에게 화면 순서, 누락 요소, 전이 조건을 수정받습니다.
-8. OS 시스템 임시 디렉터리 아래 임시 UI 작업 문서를 갱신합니다.
+8. `.codex/temp` 아래 임시 UI 작업 문서를 갱신합니다.
 9. 사용자가 요청하거나 확정한 뒤에만 최종 단일 UI 스펙/구현 문서를 작성합니다.
 10. 문서가 확정되었거나 사용자가 명시적으로 구현을 요청한 뒤에만 구현합니다.
 
@@ -34,10 +34,12 @@ Figma가 가장 흔하고 가능하면 우선 사용하지만 필수는 아닙�
 
 ## 임시 문서
 
+레포 루트 기준 `.codex/temp/` 디렉터리에 작성하고, 없으면 생성합니다. 모든 문서는 `cognitive-writing` 스킬의 원칙을 따라 작성합니다.
+
 파일명은 다음 형식을 사용합니다.
 
 ```text
-<system-temp>/codex-workflow/YYYYMMDD-HHMM-feat-<topic>-ui-workflow.md
+.codex/temp/YYYYMMDD-HHMM-feat-<topic>-ui-workflow.md
 ```
 
 ## 임시 문서 템플릿

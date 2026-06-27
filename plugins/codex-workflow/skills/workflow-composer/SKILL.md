@@ -1,6 +1,6 @@
 ---
 name: workflow-composer
-description: 요구사항 발견, 디버깅, UI/Figma 구현이 한 요청에 섞여 있을 때 사용합니다. 단일 분류를 강제하지 않고 여러 워크플로우 모듈을 조합하며, OS 시스템 임시 디렉터리에 작업 문서를 남기고 질문 순서를 조율합니다.
+description: 요구사항 발견, 디버깅, UI/Figma 구현이 한 요청에 섞여 있을 때 사용합니다. 단일 분류를 강제하지 않고 여러 워크플로우 모듈을 조합하며, `.codex/temp`에 작업 문서를 남기고 질문 순서를 조율합니다.
 ---
 
 # 워크플로우 컴포저
@@ -45,16 +45,16 @@ description: 요구사항 발견, 디버깅, UI/Figma 구현이 한 요청에 �
 
 ## 임시 문서 규칙
 
-사용자가 다른 위치를 명시하지 않으면 OS 시스템 임시 디렉터리 아래 `codex-workflow/` 디렉터리에 작업 문서를 작성합니다.
+사용자가 다른 위치를 명시하지 않으면 레포 루트 기준 `.codex/temp/` 디렉터리에 작업 문서를 작성합니다.
 
-시스템 임시 디렉터리 예시는 macOS/Linux의 `/tmp` 또는 `$TMPDIR`, Windows의 `%TEMP%`입니다. 레포 내부의 상대 경로 `tmp/`를 만들지 않습니다.
+`.codex/temp/` 디렉터리가 없으면 생성합니다.
 
-`codex-workflow/` 하위 디렉터리가 없으면 생성해도 됩니다.
+모든 작업 문서는 `cognitive-writing` 스킬의 원칙(인지 부하 최소화, GitHub-flavored Markdown 규칙)을 따라 작성합니다.
 
 파일명은 다음 형식을 사용합니다.
 
 ```text
-<system-temp>/codex-workflow/YYYYMMDD-HHMM-<type>-<topic>-workflow.md
+.codex/temp/YYYYMMDD-HHMM-<type>-<topic>-workflow.md
 ```
 
 `<type>`은 포함된 `branch-rule`의 의미 접두사를 따릅니다.
