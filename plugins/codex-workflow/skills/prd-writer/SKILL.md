@@ -42,9 +42,13 @@ description: PRD, 제품 요구사항 문서, 기술 제품 기획서, SDK/CLI/�
 
 ## 출력 위치
 
-- 사용자가 파일 작성을 요청하면 현재 작업 디렉터리 아래 적절한 Markdown 파일로 저장한다.
-- 파일명을 직접 지정하지 않으면 제품명 기반의 kebab-case 이름을 사용한다. 예: `rustview-mobile-prd.md`
+- 사용자가 파일 작성을 요청하면 레포 루트 기준 `.codex/temp/` 디렉터리에 Markdown 파일로 저장한다. 디렉터리가 없으면 생성한다. 사용자가 다른 위치를 명시하면 그 위치를 따른다.
+- 파일명을 직접 지정하지 않으면 제품명 기반의 kebab-case 이름을 사용한다. 예: `.codex/temp/rustview-mobile-prd.md`
 - 사용자가 채팅 답변만 원하면 파일을 만들지 않고 본문만 출력한다.
+
+## 작성 원칙 참조
+
+PRD 본문은 `cognitive-writing` 스킬의 원칙(인지 부하 최소화, GitHub-flavored Markdown 규칙)을 따라 작성한다.
 
 ## 기본 문서 구조
 
