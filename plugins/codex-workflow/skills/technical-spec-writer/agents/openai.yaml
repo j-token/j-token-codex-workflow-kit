@@ -1,7 +1,7 @@
 interface:
   display_name: "Technical Spec Writer"
   short_description: "구현 가능한 기술 스펙 문서를 일관된 계약으로 정리"
-  default_prompt: "Use $technical-spec-writer to turn my technical design notes into an implementation spec."
+  default_prompt: "Use $technical-spec-writer to read the approved PRD and write the technical spec."
 
 policy:
   allow_implicit_invocation: true
