@@ -4,7 +4,7 @@
 
 TL;DR: `j-token-workflow-kit` is a Codex workflow plugin that turns rough requests into reviewable specs, code changes, and verification steps. It is designed for work that starts vague and needs to become concrete before implementation.
 
-Current plugin version: `0.4.3`
+Current plugin version: `0.5.0`
 
 ## Why This Exists
 
@@ -23,8 +23,9 @@ flowchart LR
     A["Work request"] --> B["Clarify requirements through conversation"]
     B --> C["Document the agreed requirements"]
     C --> D["Review and revise with Codex comments"]
-    D --> E["Implement"]
-    E --> F["Verify after implementation"]
+    D --> E["Select model and reasoning effort"]
+    E --> F["Implement in a new task"]
+    F --> G["Verify after implementation"]
 ```
 
 ## How To Use
@@ -49,7 +50,9 @@ When the document is ready, ask Codex to implement it:
 Implement this.
 ```
 
-After implementation, Codex should verify the result and report what was checked.
+Codex rereads the approved document, selects an appropriate GPT-5.6 Sol, Terra, or Luna model and reasoning effort, then creates a new task in the same project for implementation.
+
+After implementation, the new task should verify the result and report what was checked.
 
 ## Included Skills
 
@@ -61,6 +64,7 @@ After implementation, Codex should verify the result and report what was checked
 | `bug-report-to-fix` | Captures bug details first, then moves into debugging and fixing after approval. |
 | `figma-flow-to-implementation` | Converts Figma links, screenshots, or UI references into a screen flow and implementation spec. |
 | `workflow-composer` | Combines multiple workflows when a request mixes requirements, bugs, and UI work. |
+| `start-implementation-thread` | Selects a GPT-5.6 model and reasoning effort from the approved document, then starts implementation in a new task. |
 | `cognitive-writing` | Keeps documents easy to review by reducing cognitive load. |
 | `branch-rule` | Defines branch naming rules. |
 | `commit-rule` | Defines commit message rules. |
