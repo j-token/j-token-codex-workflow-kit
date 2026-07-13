@@ -4,7 +4,7 @@
 
 TL;DR: `j-token-workflow-kit` is a Codex workflow plugin that turns rough requests into reviewable specs, code changes, and verification steps. It is designed for work that starts vague and needs to become concrete before implementation.
 
-Current plugin version: `0.5.0`
+Current plugin version: `0.5.1`
 
 ## Why This Exists
 
@@ -44,13 +44,13 @@ Document this as an implementation spec.
 
 Review the document with Codex's review system. Use review comments to fix missing details, risky assumptions, or unclear acceptance criteria.
 
-When the document is ready, ask Codex to implement it:
+When Codex presents the document, that response ends the documentation turn. In a separate follow-up message, approve the specific document and ask Codex to implement it:
 
 ```text
-Implement this.
+Approve docs/my-feature-spec.md and start implementation.
 ```
 
-Codex rereads the approved document, selects an appropriate GPT-5.6 Sol, Terra, or Luna model and reasoning effort, then creates a new task in the same project for implementation.
+Codex rereads the approved document, selects an appropriate GPT-5.6 Sol, Terra, or Luna model and reasoning effort, then creates a new thread in the same project for implementation. A request such as “document it, then implement it” is not approval; it still needs the separate follow-up message.
 
 After implementation, the new task should verify the result and report what was checked.
 
@@ -94,7 +94,11 @@ Review this spec and leave comments for anything unclear.
 ```
 
 ```text
-Apply the review comments, then implement the spec.
+Apply the review comments.
+```
+
+```text
+Approve .codex/temp/my-feature-spec.md and start implementation.
 ```
 
 ```text
