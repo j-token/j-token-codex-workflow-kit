@@ -1,6 +1,6 @@
 {
   "name": "codex-workflow",
-  "version": "0.5.3",
+  "version": "0.5.4",
   "description": "모호한 요구사항, 디버깅 요청, Figma/UI 작업, PRD와 기술 스펙을 확정한 뒤 적절한 모델의 별도 작업에서 구현하는 워크플로우 스킬 묶음입니다.",
   "author": {
     "name": "j-token",
