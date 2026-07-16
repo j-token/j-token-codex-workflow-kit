@@ -1,16 +1,15 @@
 ---
 name: branch-rule
-description: 브랜치 생성을 하기 전 반드시 참고해야할 커밋 규칙입니다. 예시 지시)브랜치 따줘,브랜치 따,브랜치 파줘
+description: Apply before creating a Git branch. Use for requests to create, cut, or name a branch.
 ---
 
-# 브랜치 이름 규칙
+# Branch Naming Rules
 
-브랜치 이름에 prefix 를 달아서 사용한다. 의미를 알 수 있는 적절한 이름을 사용한다.
-아래의 이름만을 사용한다.
+Use a descriptive, lowercase branch name with one of these prefixes:
 
-- feat/…
-- bug/…
-- perf/…
-- refactor/…
+- `feat/…`
+- `bug/…`
+- `perf/…`
+- `refactor/…`
 
-자잘한 변경점을 모은 브랜치는 **misc** 접두사를 사용한다.
+Use `misc/…` only for a small collection of unrelated minor changes.

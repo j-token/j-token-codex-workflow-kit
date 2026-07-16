@@ -1,118 +1,67 @@
 ---
 name: figma-flow-to-implementation
-description: 사용자가 Figma 링크, 스크린샷, 시각 자료를 제공하거나 UI/화면 구현을 요청할 때 사용합니다. 시각 자료를 읽고 화면 역할과 전이를 추론한 뒤 Mermaid로 흐름을 확인받고, 구현 전 단일 UI 스펙/구현 문서를 작성합니다.
+description: Apply when a user supplies a Figma link, screenshot, visual material, or asks to implement a UI or screen. Infer screen roles and transitions, confirm a Mermaid flow, and create one UI specification / implementation document before implementation.
 ---
 
-# Figma 흐름에서 구현까지
+# Figma Flow to Implementation
 
-## 진행 흐름
+## Workflow
 
-1. 제공된 모든 시각 자료를 읽습니다.
-2. 링크 순서를 화면 전이 순서로 간주하지 않습니다.
-3. 화면 이름은 원시 Figma ID가 아니라 사용자가 이해할 수 있는 의미 기반 이름으로 붙입니다.
-4. 구현에 필요한 화면 프레임 이미지, 아이콘, 로고, 일러스트, 기타 미디어 에셋을 식별합니다.
-5. Figma 접근이 가능하면 브라우저에서 Figma OAuth 승인을 거친 뒤 CLI로 REST API에서 필요한 노드 JSON, 화면 이미지, 에셋을 직접 내려받습니다.
-6. 추정한 전이를 Mermaid 흐름도로 작성합니다.
-7. 사용자에게 화면 순서, 누락 요소, 전이 조건을 수정받습니다.
-8. `.codex/temp` 아래 임시 UI 작업 문서를 갱신합니다.
-9. 사용자가 요청하거나 확정한 뒤에만 최종 단일 UI 스펙/구현 문서를 작성합니다.
-10. 문서를 제시한 뒤 현재 턴을 끝냅니다. 이후 별도 사용자 메시지에서 문서 경로 또는 버전을 확인하며 명시적으로 구현을 승인하면 `start-implementation-thread`를 적용해 별도의 Codex 작업에서 구현합니다.
+1. Inspect all provided visual material. Do not treat link order as screen-transition order.
+2. Give screens meaningful user-facing names rather than raw Figma IDs.
+3. Identify needed frames, icons, logos, illustrations, and other assets.
+4. When Figma access is available, obtain needed node JSON, screen images, and assets from the REST API after the user completes OAuth authorization.
+5. Write the inferred transitions as a Mermaid flowchart and ask the user to correct screen order, missing items, and transition conditions.
+6. Maintain a temporary UI working document.
+7. Create the final UI specification / implementation document only when requested or confirmed, present it, and end the turn.
+8. On later explicit approval identifying that document, use `start-implementation-thread` to implement it in a separate task.
 
-## 입력 선택지
+## Language policy
 
-Figma가 가장 흔하고 가능하면 우선 사용하지만 필수는 아닙니다.
+Write every generated document in the language the user requested; if none was specified, use the language of the user's request. Localize headings, templates, tables, and Mermaid labels in addition to prose. Preserve code, commands, Figma IDs, identifiers, and required proper names.
 
-허용 입력:
+## Inputs and documents
 
-- Figma 플러그인 컨텍스트
-- Figma 링크
-- 스크린샷
-- 화면 녹화
-- 사용자가 작성한 화면 설명
-
-가장 강한 입력을 사용합니다. Figma 플러그인 접근이 가능하면 우선 사용하고, 불가능하면 링크, 스크린샷, 설명으로 진행합니다. Figma 링크에 접근할 수 있고 구현에 시각 에셋이 필요하면 REST API 기반 CLI 에셋 수집 경로를 기본으로 채택합니다.
-
-## 임시 문서
-
-레포 루트 기준 `.codex/temp/` 디렉터리에 작성하고, 없으면 생성합니다. 모든 문서는 `cognitive-writing` 스킬의 원칙을 따라 작성합니다.
-
-파일명은 다음 형식을 사용합니다.
+Prefer the strongest available input: Figma plugin context, Figma link, screenshots, screen recordings, then a user-written screen description. Create `.codex/temp/` when needed, follow `cognitive-writing`, and use:
 
 ```text
 .codex/temp/YYYYMMDD-HHMM-feat-<topic>-ui-workflow.md
 ```
 
-## 임시 문서 템플릿
+Use this localized template:
 
 ```md
-# UI 작업 문서
+# UI work document
 
-## 화면 목록
-
-## 추정 화면 흐름
-
-## Mermaid 흐름도
-
-## 화면별 핵심 요소
-
-## 필요한 Figma 에셋
-
-## Figma REST API 수집 계획
-
-## 사용자 확인 필요
-
-## 확정된 전이 규칙
-
-## 제외된 전이
-
+## Screen inventory
+## Inferred screen flow
+## Mermaid flowchart
+## Key elements by screen
+## Required Figma assets
+## Figma REST API collection plan
+## User confirmation needed
+## Confirmed transition rules
+## Excluded transitions
 ## TL;DR
-
-## 구현 범위
-
-## 화면별 구현 요구사항
-
-## 상태/에러/로딩 처리
-
-## 기존 코드 연결 지점
-
-## 검증 기준
+## Implementation scope
+## Requirements by screen
+## Loading / empty / error / disabled / success states
+## Existing-code integration points
+## Acceptance criteria
 ```
 
-## Mermaid 규칙
+## Figma asset collection
 
-의미가 드러나는 라벨을 사용합니다.
+- Parse `file_key` and `node-id` from Figma links.
+- Before an OAuth flow, confirm the target Figma account, requested scopes, and redirect URL. Use least privilege: normally `file_content:read`; add `current_user:read` only when needed.
+- Validate OAuth `state`, use PKCE when possible, and exchange the short-lived authorization code promptly.
+- Never expose access tokens, refresh tokens, or client secrets in logs, documents, commits, or PRs.
+- Inspect files or nodes before export. Export frames with `GET /v1/images/:key?ids=...`; prefer SVG for suitable icons and vectors; discover image fills through `GET /v1/files/:key/images`.
+- Store files according to repository conventions and record node ID, filename, location, export options, and acquisition status in the documents.
+- Do not recreate inaccessible assets without asking the user; report the asset, reason it is unavailable, and whether a temporary substitute is acceptable.
 
-```mermaid
-flowchart TD
-    A["시작 화면"] -->|시작하기 탭| B["프로필 입력 화면"]
-    B -->|입력 완료| C["이미지 선택 화면"]
-    C -->|확정| D["생성 진행 화면"]
-```
+## Implementation gate and rules
 
-사용자가 명시적으로 필요하다고 하지 않는 한 원시 Figma 노드 ID를 차트에 넣지 않습니다.
+A request such as “organize it and implement it” is not approval. After presenting the document, require a later message that identifies its path or version and explicitly approves implementation; then hand off through `start-implementation-thread` rather than editing code in the current task.
 
-## Figma REST API 에셋 수집 규칙
-
-- Figma 링크에서 `file_key`와 `node-id`를 파싱합니다.
-- 브라우저에서 Figma OAuth 승인 URL을 열어 사용자가 로그인과 권한 승인을 직접 수행하게 합니다. OAuth 승인, 계정 연결, 권한 허용은 외부 계정 권한을 부여하는 행동이므로 실행 전에 대상 Figma 계정, 요청 scope, redirect URL을 사용자에게 확인합니다.
-- OAuth 앱은 최소 권한을 사용합니다. 파일 구조, 노드, 화면 이미지 export에는 `file_content:read` scope를 기본으로 사용하고, 사용자 식별이 필요한 경우에만 `current_user:read`을 추가합니다.
-- OAuth callback의 `state`를 검증하고, 가능하면 PKCE를 사용합니다. 인증 코드는 짧게 만료되므로 callback을 받은 즉시 CLI 또는 로컬 helper가 token endpoint에서 access token으로 교환합니다.
-- CLI 요청은 `Authorization: Bearer <TOKEN>` 헤더를 사용합니다. 토큰, refresh token, client secret은 로그, 문서, 커밋, PR 본문에 남기지 않습니다.
-- CLI는 먼저 `GET /v1/files/:key` 또는 `GET /v1/files/:key/nodes?ids=...`로 화면 구조와 export 대상 노드를 확인합니다.
-- 화면 단위 이미지는 `GET /v1/images/:key?ids=...&format=png&scale=...`로 export URL을 받아 내려받습니다. SVG가 필요한 아이콘/벡터는 `format=svg`를 우선 검토합니다.
-- Figma image fill 원본은 `GET /v1/files/:key/images`로 다운로드 URL을 확인한 뒤 내려받습니다.
-- 내려받은 파일은 구현 레포의 기존 asset 관례에 맞춰 저장하고, 임시 문서와 최종 문서에 node id, 파일명, 저장 위치, export 옵션, 확보 여부를 매핑합니다.
-- API 권한, 링크 권한, 렌더링 실패, null 이미지 URL 때문에 수집할 수 없는 에셋은 직접 재구현하지 말고 사용자에게 확인합니다.
-
-## 구현 규칙
-
-- 문서를 제시한 응답에서는 구현하지 않고 현재 턴을 끝냅니다. 최초 요청의 `정리 후 구현해줘` 같은 문구는 승인으로 인정하지 않습니다.
-- 이후 별도 사용자 메시지에서 문서 경로 또는 버전을 확인하며 `승인` 또는 `이 문서대로 구현 시작`이라고 한 경우에만 현재 작업에서 직접 코드를 수정하지 말고 `start-implementation-thread`에 UI 스펙/구현 문서 경로를 전달합니다.
-- 수정 전 기존 라우팅, 컴포넌트 구조, 디자인 시스템을 확인합니다.
-- Figma 원본에 화면 프레임, 이미지, 아이콘, 로고, 일러스트, 제품 화면, 사진, 텍스처 같은 시각 에셋이 있으면 직접 재구현하기 전에 먼저 REST API 기반 CLI로 원본 에셋을 내려받거나 내보내서 사용합니다.
-- 에셋을 받을 수 없으면 어떤 에셋이 필요한지, 왜 받을 수 없는지, 임시 대체 구현을 써도 되는지 사용자에게 확인합니다.
-- 단순 도형, 레이아웃, 텍스트 스타일처럼 코드로 충실히 재현 가능한 요소만 직접 구현합니다.
-- 임시 문서와 최종 문서에 필요한 에셋 목록, 확보 여부, 저장 위치 또는 대체 방식을 남깁니다.
-- 현재 앱의 패턴을 유지합니다.
-- 사용자가 자연스럽게 기대하는 상태를 포함합니다: 로딩, 빈 상태, 에러, 비활성, 성공 상태.
-- 프론트엔드 변경은 로컬 브라우저 대상이 있으면 시각적으로 검증합니다.
+Before implementation, inspect existing routing, components, and design-system conventions. Use retrieved original visual assets where available; implement only code-reproducible shapes, layout, and typography directly. Include natural loading, empty, error, disabled, and success states, retain app patterns, and visually verify frontend changes when a local browser target is available.

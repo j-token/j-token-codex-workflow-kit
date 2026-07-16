@@ -1,403 +1,59 @@
 ---
 name: prd-writer
-description: PRD, 제품 요구사항 문서, 기술 제품 기획서, SDK/CLI/런타임/프레임워크 스펙을 작성하거나 다듬을 때 사용한다. 특히 WebView, Rust core, IPC, native shell, 모바일 런타임, 개발자 도구처럼 아키텍처와 제품 범위를 함께 정해야 하는 문서에 사용한다.
+description: Create or refine a product requirements document (PRD), product proposal, feature requirements, or product-facing technical plan. Use to define why and what to build, scope, decisions, and acceptance criteria before technical design.
 ---
 
-# PRD Writer
+# Product Requirements Document Writer
 
-## 목적
+Create a decision-ready PRD. Define the user and business problem, desired outcome, scope, requirements, and observable acceptance criteria. Do not turn the PRD into a technical implementation specification.
 
-거친 아이디어를 구현자가 판단 가능한 PRD로 정리한다. 기본 출력은 "제품 판단 + 기능 요구사항 + 수용 기준 + 기술 아키텍처 + 리스크"가 한 문서에 들어간 기술 PRD다.
+## Language policy
 
-## 사용 원칙
+Write the complete PRD in the language the user requested. If no language was specified, use the language of the user's request. Localize headings, tables, templates, examples, and diagram labels. Preserve code, commands, APIs, identifiers, product names, and required proper names.
 
-- PRD는 구현 계획서가 아니라 제품과 범위의 결정 문서다.
-- "무엇을 만들지"와 "무엇을 만들지 않을지"를 같은 비중으로 쓴다.
-- MVP는 작게 잡고, 확장은 `v0.1`, `v0.2`, `v0.3`처럼 버전별로 분리한다.
-- 모든 기능 요구사항은 `FR-001` 형식의 ID와 수용 기준을 가진다.
-- 기술 제품 PRD에는 API 예시, 메시지 schema, 에러 모델, 보안 정책, repo/package 구조를 포함할 수 있다.
-- 불확실한 결정은 관련 섹션 안에 "미해결 문제" 블록으로 붙인다.
-- 문서 끝의 미해결 문제 섹션은 전체 복사본이 아니라 섹션별 인덱스와 우선순위 요약으로만 쓴다.
-- PRD는 기술 스펙의 입력 문서이며 구현 계약으로 사용하지 않는다.
-- PRD를 제시한 뒤 현재 턴을 끝낸다. 이후 별도 사용자 메시지에서 PRD 경로 또는 버전을 확인하며 기술 스펙 작성을 승인한 경우에만 `technical-spec-writer`에 확정된 PRD 경로를 전달한다.
-- 최초 요청의 `PRD 작성 후 스펙 작성` 또는 `문서 작성 후 구현` 같은 미래형 의사는 다음 단계의 승인으로 인정하지 않는다.
+## Process
 
-## 작성 흐름
+1. Read the request, existing working document, and relevant product context. Research facts that materially affect the decision.
+2. Separate confirmed requirements, assumptions, open questions, decisions needed from the user, and exclusions.
+3. Ask only blocking questions. Do not invent platform support, policy, user segments, legal requirements, metrics, or integrations.
+4. State the smallest viable scope and explicitly record out-of-scope items.
+5. Write concrete, testable acceptance criteria. Distinguish functional, UX, reliability, privacy, security, accessibility, and analytics requirements where relevant.
+6. Present the PRD and end the turn. A later technical-specification workflow must re-read the confirmed PRD from disk.
 
-1. 요청을 요약하고 PRD 종류를 정한다.
-   - 일반 제품 PRD
-   - 기술 제품 PRD
-   - 런타임/SDK/CLI/프레임워크 PRD
-   - 기존 초안 정리/확장
-2. 핵심 제품 판단을 먼저 고정한다.
-   - 왜 필요한가
-   - 기존 대안은 왜 부족한가
-   - 무엇을 중심축으로 삼는가
-   - v0.1에서 어디까지 할 것인가
-3. 범위를 버전별로 나눈다.
-   - `v0.1`: 실제로 동작하는 최소 제품
-   - `v0.2`: 개발자 경험과 기본 생산성
-   - `v0.3`: 확장성, 최적화, 고급 기능
-4. 기능 요구사항을 `FR-001`부터 작성한다.
-5. 비기능 요구사항, 보안, 에러 모델, 리스크를 정리하면서 각 섹션의 미해결 문제를 그 자리에서 함께 기록한다.
-6. 마지막에는 의사결정 표, 릴리즈 수용 기준, 섹션별 미해결 문제 인덱스를 둔다.
-7. PRD 경로와 상태를 제시하고 현재 턴을 끝낸 뒤, 별도 사용자 메시지의 기술 스펙 작성 승인을 기다린다.
+## Required PRD structure
 
-## 출력 위치
-
-- 사용자가 파일 작성을 요청하면 레포 루트 기준 `.codex/temp/` 디렉터리에 Markdown 파일로 저장한다. 디렉터리가 없으면 생성한다. 사용자가 다른 위치를 명시하면 그 위치를 따른다.
-- 파일명을 직접 지정하지 않으면 제품명 기반의 kebab-case 이름을 사용한다. 예: `.codex/temp/rustview-mobile-prd.md`
-- 사용자가 채팅 답변만 원하면 파일을 만들지 않고 본문만 출력한다.
-
-## 작성 원칙 참조
-
-PRD 본문은 `cognitive-writing` 스킬의 원칙(인지 부하 최소화, GitHub-flavored Markdown 규칙)을 따라 작성한다.
-
-## 기본 문서 구조
-
-기술 제품 PRD는 아래 구조를 기본값으로 사용한다. 해당 없는 섹션은 줄이되, 비목표, 수용 기준, 리스크, 섹션별 미해결 문제는 가능하면 유지한다.
+Use these sections, localized for the user:
 
 ```md
-# PRD: <제품명>
+# <Product or feature> PRD
 
-**문서 상태:** Draft
-**작성일:** YYYY-MM-DD
-**제품명:** <가칭 또는 확정명>
-**대상 플랫폼:** <플랫폼>
-**핵심 방향:** <한 줄 방향성>
-
----
-
-## 1. 제품 요약
-
-## 2. 배경과 문제 정의
-
-## 3. 제품 목표
-
-### 3.1 핵심 목표
-
-### 3.2 제품 철학
-
-## 4. 비목표
-
-## 5. 타깃 사용자
-
-## 6. 핵심 사용 시나리오
-
-## 7. 제품 범위
-
-### 7.1 v0.1 MVP 범위
-
-### 7.2 v0.2 범위
-
-### 7.3 v0.3 범위
-
-## 8. 기능 요구사항
-
-## 9. 비기능 요구사항
-
-## 10. 기술 아키텍처
-
-## 11. CLI 요구사항
-
-## 12. 설정 파일
-
-## 13. 에러 모델
-
-## 14. 보안 정책
-
-## 15. 개발자 경험
-
-## 16. 성공 지표
-
-## 17. 릴리즈 계획
-
-## 18. 주요 리스크
-
-## 19. 섹션별 미해결 문제 인덱스
-
-## 20. 의사결정
-
-## 21. 상세 수용 기준
-
-## 22. 예시 API
-
-## 23. 최종 요약
+## TL;DR
+## Problem and background
+## Goals and non-goals
+## Target users and scenarios
+## Scope
+## User journeys / requirements
+## Functional requirements
+## Non-functional requirements
+## Success metrics
+## Dependencies and constraints
+## Risks and open questions
+## Decisions required
+## Acceptance criteria
+## Rollout / measurement plan
+## References
 ```
 
-## 섹션 작성 규칙
+Omit a section only when it is genuinely not applicable, and say why when its absence could otherwise be misleading.
 
-### 섹션별 미해결 문제
+## Requirement quality
 
-미해결 문제는 가장 관련 있는 섹션 안에 둔다. 독자가 문제를 이해하기 위해 앞 섹션의 내용을 기억한 채 문서 끝으로 이동하게 만들지 않는다.
+- Use unambiguous language: identify actor, trigger, expected behavior, boundary, and failure behavior.
+- Prefer examples and scenarios for ambiguous behavior.
+- Make success metrics measurable and specify the baseline, target, owner, and measurement window when known; otherwise label them as open.
+- Do not promise implementation details, timelines, or outcomes unsupported by evidence.
+- Use a Mermaid flow only when a journey, state, or dependency cannot be understood clearly from concise prose.
 
-권장 블록:
+## Handoff
 
-```md
-#### 미해결 문제
-
-- **문제**: 아직 결정되지 않은 내용
-- **영향**: 이 결정이 늦어질 때 막히는 범위
-- **후보**: 선택지 A / 선택지 B
-- **결정 필요 시점**: v0.1 설계 전 / 구현 전 / 릴리즈 전
-```
-
-규칙:
-
-- 해당 섹션과 직접 관련된 문제만 둔다.
-- 문제가 1개뿐이면 짧은 bullet 하나로 줄인다.
-- 문서 끝에는 상세를 반복하지 않고 섹션 링크, 우선순위, 결정 필요 시점만 요약한다.
-- 전역 의사결정처럼 여러 섹션을 막는 문제만 마지막 인덱스에 별도 항목으로 둔다.
-
-### 제품 요약
-
-3~5문단으로 쓴다.
-
-- 이 제품이 무엇인지
-- 기존 대안과 무엇이 다른지
-- 가장 중요한 설계 판단이 무엇인지
-- MVP에서 해결할 문제가 무엇인지
-
-핵심 판단은 인용문으로 한 번 고정해도 된다.
-
-```md
-> 앱 프레임워크를 만들지 말고, Rust와 WebView를 안정적으로 연결하는 모바일 런타임을 만든다.
-```
-
-### 배경과 문제 정의
-
-대안별 한계를 명확히 쓴다. 비판은 감정이 아니라 제품 요구사항 관점으로 쓴다.
-
-예시 분류:
-
-- Tauri Mobile의 문제
-- Expo/React Native의 문제
-- Capacitor의 문제
-- 직접 구현이 필요한 이유
-
-### 제품 목표
-
-핵심 목표는 번호 목록으로 쓴다. 제품 철학은 짧은 bullet로 쓴다.
-
-좋은 목표:
-
-- Rust core를 모바일 앱의 1급 실행 엔진으로 사용
-- WebView UI에서 Rust command를 안전하게 호출
-- iOS/Android 공통 IPC 프로토콜 제공
-
-나쁜 목표:
-
-- 좋은 UX 제공
-- 안정적으로 만들기
-- 여러 기능 지원
-
-### 비목표
-
-v0.x에서 하지 않을 것을 명시한다. 비목표는 범위 팽창을 막는 장치다.
-
-예시:
-
-- Tauri 전체 기능 복제
-- Expo/EAS 대체
-- 대형 플러그인 마켓플레이스 구축
-- 모든 네이티브 API 추상화
-
-### 타깃 사용자
-
-1차, 2차, 3차 사용자로 나누고 각 사용자마다 다음을 쓴다.
-
-- 누구인가
-- 원하는 것
-- 이 제품을 쓰는 이유
-
-### 핵심 사용 시나리오
-
-각 시나리오는 아래 형식을 따른다.
-
-````md
-### 시나리오 N: <이름>
-
-상황 설명.
-
-```ts
-// API 또는 명령어 예시
-```
-
-요구사항:
-
-- ...
-
-성공 기준:
-
-- ...
-````
-
-### 제품 범위
-
-버전별로 포함/제외를 분리한다.
-
-- `v0.1`: end-to-end로 실제 앱 하나를 만들 수 있는 최소 런타임
-- `v0.2`: 이벤트, 권한, 파일, typed binding, doctor 같은 생산성 기능
-- `v0.3`: streaming, cancellation, binary payload, plugin boundary 같은 확장 기능
-
-### 기능 요구사항
-
-모든 기능 요구사항은 이 형식을 따른다.
-
-```md
-### FR-001: <기능명>
-
-제품은 <대상>에서 <동작>을 제공해야 한다.
-
-요구사항:
-
-- ...
-
-수용 기준:
-
-- ...
-```
-
-수용 기준은 테스트 가능한 문장으로 쓴다.
-
-좋은 수용 기준:
-
-- JS에서 `invoke()`를 호출하면 Rust command가 실행된다.
-- unknown command 호출 시 `COMMAND_NOT_FOUND` 에러를 반환한다.
-- WebView reload 후 bridge가 재초기화된다.
-
-나쁜 수용 기준:
-
-- 잘 동작한다.
-- 안정적이다.
-- 사용하기 쉽다.
-
-### 비기능 요구사항
-
-필요한 항목만 사용한다.
-
-- 성능
-- 안정성
-- 보안
-- 유지보수성
-- 디버깅성
-- 이식성
-
-정량 목표가 있으면 표로 쓴다. 수치는 초기 가정임을 명시한다.
-
-### 기술 아키텍처
-
-기술 제품에는 텍스트 다이어그램을 포함한다.
-
-```txt
-Web UI
-  ↓
-TypeScript SDK
-  ↓
-Injected WebView Bridge
-  ↓
-Swift/Kotlin Native Shell
-  ↓
-Rust FFI / JNI
-  ↓
-Rust Runtime
-  ↓
-Command Registry
-```
-
-필요하면 repository 구조, package/crate 역할, native boundary를 추가한다.
-
-### 에러 모델
-
-IPC, SDK, CLI처럼 호출 계약이 있는 제품은 structured error를 정의한다.
-
-```ts
-type ProductError = {
-  code: string
-  message: string
-  data?: unknown
-}
-```
-
-기본 error code는 표로 정리한다.
-
-### 보안 정책
-
-WebView, IPC, native bridge, plugin, remote URL이 있으면 별도 섹션을 둔다.
-
-필수 검토 항목:
-
-- origin allowlist
-- navigation 제한
-- command allowlist
-- release 모드 remote URL 차단
-- IPC schema validation
-- file URL 접근 제한
-- dev/release 보안 차이
-
-### 리스크
-
-각 리스크는 문제와 대응을 분리한다.
-
-```md
-### 18.1 <리스크명>
-
-문제:
-
-- ...
-
-대응:
-
-- ...
-```
-
-### 섹션별 미해결 문제 인덱스
-
-문서 끝의 인덱스는 상세 목록이 아니라 리뷰 순서를 잡기 위한 요약이다. 상세 내용은 관련 섹션 안의 `미해결 문제` 블록에 둔다.
-
-예시:
-
-| 섹션 | 우선순위 | 미해결 문제 | 결정 필요 시점 |
-|---|---|---|---|
-| `7.1 v0.1 MVP 범위` | 높음 | CLI를 v0.1에 포함할지 결정 필요 | 구현 전 |
-| `14. 보안 정책` | 높음 | release remote URL 허용 예외 정책 필요 | 릴리즈 전 |
-
-이 섹션은 미해결 문제가 3개 이하이면 생략해도 된다.
-
-### 의사결정
-
-현재 기준 권장 결정을 표로 정리한다.
-
-```md
-| 항목 | 결정 |
-|---|---|
-| UI 런타임 | WebView |
-| 핵심 로직 | Rust |
-| IPC v0.1 | JSON request/response |
-```
-
-### 상세 수용 기준
-
-릴리즈 단위 체크리스트로 작성한다. 플랫폼이 있으면 플랫폼별로 나눈다.
-
-예시:
-
-- iOS
-- Android
-- Rust
-- JS SDK
-- CLI
-
-## 품질 체크리스트
-
-출력 전 아래를 확인한다.
-
-- [ ] 첫 화면에서 제품의 핵심 판단이 보이는가
-- [ ] 기존 대안의 한계가 제품 요구사항과 연결되는가
-- [ ] 비목표가 범위 팽창을 막을 만큼 구체적인가
-- [ ] `v0.1`이 실제로 만들 수 있을 만큼 작게 잘렸는가
-- [ ] 모든 `FR-*`에 수용 기준이 있는가
-- [ ] API, schema, CLI, config 예시가 계약을 설명하는 데 필요한 만큼만 들어갔는가
-- [ ] 보안/에러/lifecycle 같은 실패 지점이 빠지지 않았는가
-- [ ] 미해결 문제가 관련 섹션 안에 있고 마지막에는 인덱스만 있는가
-- [ ] 최종 요약이 MVP 범위를 다시 압축해서 보여주는가
+The PRD is the authoritative product decision record. It becomes input to `technical-spec-writer`, not authorization to implement. Preserve user decisions and excluded approaches so the technical specification can trace them.

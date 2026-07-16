@@ -1,94 +1,42 @@
 ---
 name: workflow-composer
-description: 요구사항 발견, 디버깅, UI/Figma 구현이 한 요청에 섞여 있을 때 사용합니다. 단일 분류를 강제하지 않고 여러 워크플로우 모듈을 조합하며, `.codex/temp`에 작업 문서를 남기고 질문 순서를 조율합니다.
+description: Apply when requirements discovery, debugging, and UI or Figma implementation are mixed in one request. Combine the relevant workflow modules without forcing one classification, keep working documents in `.codex/temp`, and sequence questions clearly.
 ---
 
-# 워크플로우 컴포저
+# Workflow Composer
 
-## 목적
+Use this as the entry point for compound requests. Detect and apply every relevant module:
 
-다음 작업이 하나 이상 포함된 복합 요청의 진입점으로 사용합니다.
+| Signal | Module |
+| --- | --- |
+| Context, desired outcome, rough feature, policy, product or feature specification | `requirements-to-spec` → `prd-writer` → `technical-spec-writer` |
+| Symptom, error, screenshot, log, reproduction, or “it does not work” | `bug-report-to-fix` |
+| Figma link, screen, design, UI flow, screenshot, or visual material | `figma-flow-to-implementation` |
 
-- 거친 요구사항을 PRD로 수렴한 뒤 기술 스펙으로 구체화
-- 디버깅 전에 버그 리포트 작성
-- Figma 링크, 스크린샷, UI 설명을 읽고 화면 구현 준비
+Use supporting skills as their triggers apply: `cognitive-writing`, `branch-rule`, `commit-rule`, `pr-rule`, `git-push-safety`, `start-implementation-thread`, and `orchestrate-subagents`. Disable a module only when the user explicitly excludes it or asks for a narrower mode.
 
-요청을 반드시 하나의 유형으로 분류하지 않습니다. 한 사용자 메시지 안에서 여러 모듈이 동시에 활성화될 수 있습니다.
+## Language policy
 
-## 포함된 보조 스킬
+Write all generated documents in the language the user requested; if no language was specified, use the language of the user's request. Apply this to headings, prose, tables, templates, and diagram labels. Preserve code, commands, identifiers, and required proper names.
 
-이 플러그인은 다음 로컬 스킬을 함께 포함합니다. 각 스킬의 트리거 조건에 맞으면 적용합니다.
+## Sequencing and documents
 
-- `cognitive-writing`: 문서를 읽기 쉽게 구조화합니다.
-- `branch-rule`: `feat`, `bug`, `perf`, `refactor`, `misc` 같은 의미 접두사를 사용합니다.
-- `commit-rule`: 사용자가 명시적으로 커밋을 요청했을 때 적용합니다.
-- `pr-rule`: 사용자가 명시적으로 PR을 요청했을 때 적용합니다.
-- `git-push-safety`: 모든 푸시 전에 적용합니다.
-- `prd-writer`: 제품의 목적, 범위, 기능 요구사항과 수용 기준을 먼저 확정합니다.
-- `technical-spec-writer`: 확정된 PRD를 구현 계약과 검증 기준으로 구체화합니다.
-- `start-implementation-thread`: 확정된 문서를 구현할 때 모델과 추론 강도를 선택하고 별도의 Codex 작업을 만듭니다.
-- `orchestrate-subagents`: 현재 작업 안에서만 필요한 하위 에이전트를 생성 게이트, 역할 라우팅, 파일 소유권 규칙에 따라 배정합니다.
+Follow the order in which the user introduced work items. Finish the required questions and document update for one item before moving to the next; do not mix unrelated questions unless one response genuinely resolves multiple modules.
 
-## 활성화 모델
-
-요청 안의 작업 단위를 감지하고, 일치하는 모든 모듈을 활성화합니다.
-
-| 단서                                                    | 활성화 모듈                                                     |
-| ------------------------------------------------------- | --------------------------------------------------------------- |
-| 배경, 원하는 결과, 거친 기능, 정책, 제품·기능 스펙 요청 | `requirements-to-spec` → `prd-writer` → `technical-spec-writer` |
-| 증상, 오류, 스크린샷, 로그, 재현, "안 된다"             | `bug-report-to-fix`                                             |
-| Figma 링크, 화면, 디자인, UI 흐름, 스크린샷, 시각 자료  | `figma-flow-to-implementation`                                  |
-
-모든 모듈은 기본적으로 활성화 가능 상태입니다. 사용자가 명시적으로 제외하거나 더 좁은 모드만 요청한 경우에만 비활성화합니다.
-
-## 질문 순서
-
-질문은 사용자가 작업을 제시한 순서를 따릅니다.
-
-첫 번째 작업 단위의 필요한 질문과 문서 갱신을 끝낸 뒤 다음 작업 단위로 이동합니다. 한 답변이 여러 모듈을 동시에 풀어주는 경우가 아니라면 서로 다른 주제의 질문을 섞지 않습니다.
-
-## 임시 문서 규칙
-
-사용자가 다른 위치를 명시하지 않으면 레포 루트 기준 `.codex/temp/` 디렉터리에 작업 문서를 작성합니다.
-
-`.codex/temp/` 디렉터리가 없으면 생성합니다.
-
-모든 작업 문서는 `cognitive-writing` 스킬의 원칙(인지 부하 최소화, GitHub-flavored Markdown 규칙)을 따라 작성합니다.
-
-파일명은 다음 형식을 사용합니다.
+Unless the user specifies another location, create `.codex/temp/` at the repository root and use `cognitive-writing`:
 
 ```text
 .codex/temp/YYYYMMDD-HHMM-<type>-<topic>-workflow.md
 ```
 
-`<type>`은 포함된 `branch-rule`의 의미 접두사를 따릅니다.
+Use `feat`, `bug`, `perf`, `refactor`, or `misc` for `<type>`, a recognizable slug for `<topic>`, and numeric suffixes to prevent same-minute collisions.
 
-- `feat`: 기능, 요구사항, UI, 문서화 흐름
-- `bug`: 디버깅 또는 결함 조사 흐름
-- `perf`: 성능 작업
-- `refactor`: 리팩터링 작업
-- `misc`: 다른 유형에 맞지 않는 작은 혼합 작업
+## Final-document and approval rules
 
-`<topic>`에는 사용자의 요청을 알아볼 수 있는 짧은 슬러그를 넣습니다. 같은 분에 같은 파일명이 생기면 `-2`, `-3` 같은 접미사를 붙여 덮어쓰기를 피합니다.
-
-## 최종 문서 규칙
-
-최종 정식 문서는 사용자가 요청하거나 작업 문서를 명시적으로 확정했을 때만 작성합니다.
-
-제품·기능 워크플로우는 PRD와 기술 스펙을 책임이 다른 두 파일로 작성합니다. PRD를 먼저 제시하고 별도 사용자 메시지로 승인받은 뒤 기술 스펙을 작성합니다.
-
-버그와 UI 워크플로우는 해당 스킬이 정한 하나의 구현 기준 문서를 유지합니다.
-
-사용자가 파일명을 주면 그대로 사용합니다. 주지 않으면 작업 의미를 반영해 LLM이 적절한 파일명을 정합니다.
-
-## 핵심 원칙
-
-- 사용자가 말하지 않은 플랫폼, 원인, 화면 순서를 단정하지 않습니다.
-- 사실, 추정, 열린 질문, 결정을 분리합니다.
-- 사용자가 승인한 항목은 결정 사항으로 승격합니다.
-- 제외된 방향을 기록해 이후 다시 등장하지 않게 합니다.
-- 제품·기능 요청은 `요구사항 정리 → PRD 제시 → 별도 기술 스펙 승인 → 기술 스펙 제시 → 별도 구현 승인` 순서를 지킵니다.
-- 각 문서를 제시한 뒤 현재 턴을 끝냅니다. 최초 요청의 미래형 다음 단계 의사는 승인으로 인정하지 않습니다.
-- 구현 시작 승인을 받으면 현재 작업에서 직접 구현하지 말고 `start-implementation-thread`를 적용합니다.
-- 새 구현 작업의 루트 모델·추론 강도 선택은 `start-implementation-thread`의 책임이며, 그 작업 내부의 하위 에이전트 생성 여부·역할·모델·분해는 수신 작업이 `orchestrate-subagents`로 독립 판단합니다. 송신 작업은 이를 미리 배정하거나 인계 지시로 고정하지 않습니다.
-- 제품·기능 구현에는 PRD가 아니라 확정된 기술 스펙을 전달합니다. `start-implementation-thread`가 구현 기준 문서를 다시 읽고 모델과 추론 강도를 선택해 별도의 Codex 작업을 만든 뒤 구현을 넘기게 합니다.
+- Create final documents only when the user requests them or explicitly confirms the working document.
+- For product and feature work, write a PRD first, present it, wait for separate approval, then write and present a technical specification. Keep them separate.
+- For bug and UI work, maintain the single implementation-basis document specified by the corresponding skill.
+- Separate facts, assumptions, open questions, decisions, and exclusions.
+- Presenting a document ends the current turn; future-tense intent in the original request is not approval.
+- On later explicit approval, hand the approved technical specification or relevant bug/UI document to `start-implementation-thread`; do not implement in the current task.
+- The receiving implementation task, not this task, independently decides whether to use subagents through `orchestrate-subagents`.

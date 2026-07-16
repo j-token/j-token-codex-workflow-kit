@@ -1,80 +1,59 @@
 ---
 name: requirements-to-spec
-description: 사용자가 거친 요구사항, 배경, 불확실한 질문을 가져오거나 제품·기능 문서 작성을 요청할 때 사용합니다. `.codex/temp`에 요구사항 작업 문서를 만들고, 불명확한 지점을 조사한 뒤 PRD를 먼저 확정하고 기술 스펙을 작성합니다.
+description: Apply when a user brings rough requirements, context, open questions, or asks for product or feature documentation. Create a working document in `.codex/temp`, resolve uncertainty, write and confirm a PRD, then write a technical specification.
 ---
 
-# 요구사항에서 스펙 만들기
+# Requirements to Specification
 
-## 진행 흐름
+## Workflow
 
-1. 현재 이해한 내용을 다시 요약합니다.
-2. 요청을 `확정`, `조사 필요`, `사용자 결정 필요`, `제외`로 나눕니다.
-3. 사용자가 "이게 이미 되어 있나?"라고 묻거나 구현이 사실 확인에 의존하면 코드, 문서, 외부 자료를 조사합니다.
-4. `.codex/temp` 아래 임시 작업 문서를 갱신합니다.
-5. 요구사항이 정리되면 `prd-writer`를 적용해 PRD를 작성합니다.
-6. PRD를 제시한 뒤 현재 턴을 끝냅니다. 이후 별도 사용자 메시지에서 PRD 경로 또는 버전을 확인하며 기술 스펙 작성을 승인받습니다.
-7. 승인된 PRD를 파일에서 다시 읽고 `technical-spec-writer`를 적용해 별도의 기술 스펙 문서를 작성합니다.
-8. 기술 스펙을 제시한 뒤 현재 턴을 끝냅니다. 이후 별도 사용자 메시지에서 기술 스펙 경로 또는 버전을 확인하며 구현을 승인받은 경우에만 `start-implementation-thread`를 적용합니다.
+1. Restate the current understanding.
+2. Classify items as confirmed, needs research, needs a user decision, or excluded.
+3. Inspect code, documentation, or external sources when a fact affects implementation.
+4. Update the temporary document in `.codex/temp`.
+5. Once requirements are ready, apply `prd-writer` and present the PRD.
+6. End the turn. In a later message, require approval that identifies the PRD path or version before applying `technical-spec-writer`.
+7. Re-read the approved PRD from disk and write a separate technical specification.
+8. Present it and end the turn. Require a later explicit implementation approval before applying `start-implementation-thread`.
 
-## 임시 문서
+## Language policy
 
-레포 루트 기준 `.codex/temp/` 디렉터리에 작성하고, 없으면 생성합니다. 모든 문서는 `cognitive-writing` 스킬의 원칙을 따라 작성합니다.
+Write all generated documents in the language the user requested; if none was stated, use the language of the user's request. Localize headings, tables, templates, and diagram labels as well as prose. Do not translate code, commands, identifiers, or required proper names.
 
-파일명은 다음 형식을 사용합니다.
+## Documents
+
+Create `.codex/temp/` when needed and follow `cognitive-writing`.
 
 ```text
 .codex/temp/YYYYMMDD-HHMM-feat-<topic>-workflow.md
-```
-
-기능/스펙 흐름이 아니라 작은 혼합 정리 작업이면 `feat` 대신 `misc`를 사용합니다.
-
-## 임시 문서 템플릿
-
-```md
-# 요구사항/구현 작업 문서
-
-## 현재 목표
-
-## 배경
-
-## 확정된 요구사항
-
-## 열린 질문
-
-## 조사 결과
-
-## 결정 사항
-
-## 제외된 방향
-
-## 구현 계획
-
-## 검증 기준
-
-## 다음 확인 사항
-```
-
-## 최종 문서
-
-제품·기능 워크플로우의 정식 문서는 책임이 다른 두 파일로 유지합니다.
-
-```text
 .codex/temp/<product>-prd.md
 .codex/temp/<product>-technical-spec.md
 ```
 
-- PRD는 왜 만드는지와 무엇을 만들지, 범위와 수용 기준을 결정합니다.
-- 기술 스펙은 확정된 PRD를 바탕으로 어떻게 구현할지와 계약, 검증 방법을 결정합니다.
-- 각 문서의 구조는 각각 `prd-writer`, `technical-spec-writer`를 따릅니다.
+Use `misc` instead of `feat` for a small mixed cleanup. Keep the PRD and technical specification as separate files: the PRD establishes why and what to build, scope, and acceptance criteria; the technical specification establishes implementation, contracts, and verification.
 
-## 규칙
+Use this localized working-document template:
 
-- 첫 거친 메시지만 보고 스펙을 확정하지 않습니다.
-- 막히는 질문만 묻고, 그 외에는 먼저 조사합니다.
-- 사용자가 "채용해줘"라고 하면 결정 사항으로 옮깁니다.
-- 사용자가 "빼줘"라고 하면 제외된 방향에 기록합니다.
-- PRD와 기술 스펙을 하나의 파일로 합치지 않습니다.
-- PRD를 제시한 응답에서는 기술 스펙을 이어서 작성하지 않고 현재 턴을 끝냅니다.
-- 기술 스펙을 제시한 응답에서는 구현하지 않고 현재 턴을 끝냅니다.
-- `PRD와 스펙 작성 후 구현해줘` 같은 최초 요청은 기술 스펙 작성 또는 구현 승인으로 인정하지 않습니다.
-- 이후 별도 사용자 메시지에서 기술 스펙 경로 또는 버전을 확인하며 `승인` 또는 `이 문서대로 구현 시작`이라고 한 경우에만 현재 작업에서 직접 코드를 수정하지 말고 `start-implementation-thread`에 확정된 기술 스펙 경로를 전달합니다.
+```md
+# Requirements / implementation work document
+
+## Current goal
+## Background
+## Confirmed requirements
+## Open questions
+## Research findings
+## Decisions
+## Excluded approaches
+## Implementation plan
+## Acceptance criteria
+## Next confirmations
+```
+
+## Rules
+
+- Do not finalize a specification from a single rough message.
+- Ask only blocking questions; research other unknowns first.
+- Move user-approved items to **Decisions** and rejected ideas to **Excluded approaches**.
+- Do not merge the PRD and technical specification.
+- Do not write the technical specification in the PRD presentation response, and do not implement in the technical-specification presentation response.
+- A first request such as “write the PRD and spec, then implement” is not later approval. On later explicit approval identifying the technical specification, use `start-implementation-thread` rather than changing code in the current task.
