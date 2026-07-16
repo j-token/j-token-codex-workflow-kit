@@ -68,6 +68,7 @@ Codex는 확정 문서를 다시 읽고 GPT-5.6 Sol, Terra, Luna 중 적절한 �
 | `figma-flow-to-implementation` | Figma 링크, 스크린샷, UI 자료를 화면 흐름과 구현 문서로 바꿉니다. |
 | `workflow-composer` | 요구사항, 버그, UI 작업이 섞인 요청에 여러 워크플로우를 조합합니다. |
 | `start-implementation-thread` | 확정된 문서에 맞는 GPT-5.6 모델과 추론 강도를 선택해 새 작업에서 구현을 시작합니다. |
+| `orchestrate-subagents` | 현재 작업에서 필요한 하위 에이전트만 생성 게이트, 역할 라우팅, 최소 컨텍스트, 순차 체크포인트, 파일 소유권 규칙으로 배정합니다. |
 | `cognitive-writing` | 리뷰하기 쉬운 문서를 쓰도록 인지 부하를 줄이는 글쓰기 규칙을 제공합니다. |
 | `branch-rule` | 브랜치 이름 규칙을 정의합니다. |
 | `commit-rule` | 커밋 메시지 규칙을 정의합니다. |
@@ -119,4 +120,4 @@ plugins/codex-workflow/references/
 
 ## 라이선스
 
-MIT
+[Apache License 2.0](LICENSE)

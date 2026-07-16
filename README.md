@@ -67,6 +67,7 @@ After implementation, the new task should verify the result and report what was 
 | `figma-flow-to-implementation` | Converts Figma links, screenshots, or UI references into a screen flow and implementation spec. |
 | `workflow-composer` | Combines multiple workflows when a request mixes requirements, bugs, and UI work. |
 | `start-implementation-thread` | Selects a GPT-5.6 model and reasoning effort from the approved document, then starts implementation in a new task. |
+| `orchestrate-subagents` | Gates subagent creation and assigns only necessary in-task work with role routing, minimal context, checkpoints, and file ownership. |
 | `cognitive-writing` | Keeps documents easy to review by reducing cognitive load. |
 | `branch-rule` | Defines branch naming rules. |
 | `commit-rule` | Defines commit message rules. |
@@ -118,4 +119,4 @@ plugins/codex-workflow/references/
 
 ## License
 
-MIT
+[Apache License 2.0](LICENSE)
