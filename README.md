@@ -4,7 +4,7 @@
 
 TL;DR: `j-token-workflow-kit` is a Codex workflow plugin that turns rough requests into reviewable specs, code changes, and verification steps. It is designed for work that starts vague and needs to become concrete before implementation.
 
-Current plugin version: `0.5.1`
+Current plugin version: `0.6.0`
 
 ## Why This Exists
 
@@ -67,6 +67,7 @@ After implementation, the new task should verify the result and report what was 
 | `figma-flow-to-implementation` | Converts Figma links, screenshots, or UI references into a screen flow and implementation spec. |
 | `workflow-composer` | Combines multiple workflows when a request mixes requirements, bugs, and UI work. |
 | `start-implementation-thread` | Selects a GPT-5.6 model and reasoning effort from the approved document, then starts implementation in a new task. |
+| `orchestrate-subagents` | Gates subagent creation and assigns only necessary in-task work with role routing, minimal context, checkpoints, and file ownership. |
 | `cognitive-writing` | Keeps documents easy to review by reducing cognitive load. |
 | `branch-rule` | Defines branch naming rules. |
 | `commit-rule` | Defines commit message rules. |
@@ -118,4 +119,4 @@ plugins/codex-workflow/references/
 
 ## License
 
-MIT
+[Apache License 2.0](LICENSE)
