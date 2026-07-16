@@ -1,0 +1,4 @@
+interface:
+  display_name: "구현 작업 시작"
+  short_description: "구현에 맞는 모델과 추론 강도로 새 작업을 시작합니다."
+  default_prompt: "$start-implementation-thread를 사용해 확정된 기술 스펙 문서를 구현·검증까지 수행할 새 구현 실행 스레드로 넘겨줘."
