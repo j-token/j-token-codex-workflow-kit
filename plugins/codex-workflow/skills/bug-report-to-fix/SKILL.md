@@ -5,6 +5,10 @@ description: Apply when a user reports a bug, unclear symptom, screenshot, log, 
 
 # Bug Report to Fix
 
+## Output Language
+
+All user-facing output and every document produced by this skill must use the language requested by the user. If no language is specified, use the language of the user's request. Translate headings, labels, tables, checklists, and prompts; keep code, paths, identifiers, commands, and required proper names unchanged.
+
 ## Workflow
 
 1. Separate observed facts from assumptions.

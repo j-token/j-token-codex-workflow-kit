@@ -5,6 +5,10 @@ description: Create and iterate on lightweight visual web prototypes before a de
 
 # Prototype Design
 
+## Output Language
+
+All user-facing output and every prototype document produced by this skill must use the language requested by the user. If no language is specified, use the language of the user's request. Translate headings, labels, prompts, diagrams, and visible prototype copy; keep code, paths, identifiers, commands, and required proper names unchanged.
+
 ## Purpose
 
 Create a working visual prototype that users can see and click before the product idea, screen flow, or visual direction is finalized. The output is a reviewable concept for feedback, not a production implementation, Figma file, or final design specification.

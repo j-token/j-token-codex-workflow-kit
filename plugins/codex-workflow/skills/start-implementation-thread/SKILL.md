@@ -5,6 +5,10 @@ description: Apply after a technical specification, bug report, or UI implementa
 
 # Start an Implementation Task
 
+## Output Language
+
+All user-facing output and every handoff prompt produced by this skill must use the language requested by the user. If no language is specified, use the language of the user's request. Translate every prompt section heading, label, reason, and report; keep code, paths, identifiers, commands, model IDs, API names, and required proper names unchanged.
+
 Re-read the approved implementation-basis document, choose the minimum capable model and reasoning effort, and start implementation in a separate Codex task.
 
 ## Start gate
@@ -40,8 +44,30 @@ Only when `thread/start` and `turn/start` are available to the current model:
 
 The task prompt must require implementation, verification, and reporting; forbid stopping after document reading or handing work to another implementation task. Preserve the original request and classify extra user instructions into goal, work, prohibitions, and constraints. Do not invent scope, implementation methods, worktrees, or constraints.
 
+If `thread/start` or `turn/start` is unavailable to the current model, still prepare the complete handoff before reporting the limitation. The fallback report and its labels must follow the `Language policy` above: use the language requested by the user, or the language of the user's request when no language was specified. Output all of the following:
+
+- selected model;
+- selected reasoning effort;
+- the reason for the selection; and
+- the complete prompt that would have been passed to `turn/start`.
+
+Do not summarize, shorten, or rewrite that prompt in the fallback report. Put the exact final `turn/start` input in a Markdown code block, including every localized section, the original user request, and the approved document paths. Also state that the unsupported tool surface prevents creating the new task and that implementation will not continue in the current task.
+
+Use this fallback format, translated into the user's language:
+
+```text
+The current session does not provide `thread/start` and `turn/start`, so a new implementation task cannot be created.
+
+Selected model: <model>
+Selected reasoning effort: <effort>
+Selection reason: <reason>
+
+Prompt intended for the new task:
+<the complete, exact turn/start input in a code block>
+```
+
 ## Subagent boundary
 
 The root model and effort selected here are separate from any later internal delegation. Do not preassign subagent count, roles, models, or task decomposition in the handoff prompt. The receiving task independently applies `orchestrate-subagents` after reading the approved documents and latest user direction; if its creation gate fails, it implements directly.
 
-After successfully creating the task and its first turn, do not continue implementation in the current task. If task-creation tools are unavailable, do not implement as a substitute: report the limitation, selected model and effort, and minimum handoff prompt.
+After successfully creating the task and its first turn, do not continue implementation in the current task. If task-creation tools are unavailable, do not implement as a substitute: report the limitation, selected model, reasoning effort, selection reason, and the complete exact handoff prompt.

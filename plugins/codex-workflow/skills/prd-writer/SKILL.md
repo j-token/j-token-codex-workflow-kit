@@ -9,6 +9,8 @@ Create a decision-ready PRD. Define the user and business problem, desired outco
 
 ## Language policy
 
+All user-facing output and every artifact produced by this skill must use the language requested by the user. If no language is specified, use the language of the user's request.
+
 Write the complete PRD in the language the user requested. If no language was specified, use the language of the user's request. Localize headings, tables, templates, examples, and diagram labels. Preserve code, commands, APIs, identifiers, product names, and required proper names.
 
 ## Process

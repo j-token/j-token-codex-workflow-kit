@@ -9,6 +9,8 @@ Write for a reader who should understand the decision and verify the work withou
 
 ## Language policy
 
+All user-facing output and every artifact produced by this skill must use the language requested by the user. If no language is specified, use the language of the user's request.
+
 Write the artifact in the language the user requested. If no language was explicitly requested, use the language of the user's request. This includes headings, tables, checklists, examples, and Mermaid labels. Preserve code, commands, API names, identifiers, and required proper names.
 
 ## Core rules

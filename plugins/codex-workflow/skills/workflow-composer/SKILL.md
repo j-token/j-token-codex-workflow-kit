@@ -5,6 +5,10 @@ description: Apply when requirements discovery, debugging, and UI or Figma imple
 
 # Workflow Composer
 
+## Output Language
+
+All user-facing output and every working document or prompt produced by this skill must use the language requested by the user. If no language is specified, use the language of the user's request. Translate headings, labels, questions, templates, prompts, and reports; keep code, paths, identifiers, commands, skill names, and required proper names unchanged.
+
 Use this as the entry point for compound requests. Detect and apply every relevant module:
 
 | Signal | Module |
