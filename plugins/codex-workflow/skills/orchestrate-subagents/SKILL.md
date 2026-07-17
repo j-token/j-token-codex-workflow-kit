@@ -5,6 +5,10 @@ description: Apply before spawning subagents or beginning implementation that ma
 
 # Subagent Orchestration
 
+## Output Language
+
+All user-facing output and every prompt sent to a subagent by this skill must use the language requested by the user. If no language is specified, use the language of the user's request. Translate prompt sections, labels, and reports while preserving code, paths, identifiers, commands, model IDs, and required proper names.
+
 Do not create subagents by default. The root agent remains responsible for validation, conflict resolution, and final integration. This skill never bypasses document-approval or new-implementation-task gates.
 
 ## Creation gate

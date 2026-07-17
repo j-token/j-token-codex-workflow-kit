@@ -5,6 +5,10 @@ description: Apply when a user brings rough requirements, context, open question
 
 # Requirements to Specification
 
+## Output Language
+
+All user-facing output and every working document produced by this skill must use the language requested by the user. If no language is specified, use the language of the user's request. Translate headings, labels, tables, checklists, prompts, and templates; keep code, paths, identifiers, commands, and required proper names unchanged.
+
 ## Workflow
 
 1. Restate the current understanding.

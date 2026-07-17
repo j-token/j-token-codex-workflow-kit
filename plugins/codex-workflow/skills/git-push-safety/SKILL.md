@@ -5,6 +5,10 @@ description: Apply when Codex is asked to execute, prepare, review, explain, for
 
 # Git Push Safety Rules
 
+## Output Language
+
+All user-facing output produced by this skill must use the language requested by the user. If no language is specified, use the language of the user's request. Keep Git commands, branch names, remote names, paths, identifiers, and other technical tokens unchanged.
+
 ## Authorization
 
 Execute `git push` only when the user explicitly requests or approves it for the current push. A conceptual question requires explanation only; never run a command for it.

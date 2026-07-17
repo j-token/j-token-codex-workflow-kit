@@ -5,6 +5,10 @@ description: Apply when the user explicitly asks Codex to create a Git commit. R
 
 # Commit Rules
 
+## Output Language
+
+All user-facing output produced by this skill must use the language requested by the user. If no language is specified, use the language of the user's request. Keep Git commands, commit messages when constrained by repository rules, paths, identifiers, and other technical tokens unchanged unless translation is explicitly requested.
+
 ## Authorization
 
 - Create a commit only after the user explicitly authorizes it for the current request.

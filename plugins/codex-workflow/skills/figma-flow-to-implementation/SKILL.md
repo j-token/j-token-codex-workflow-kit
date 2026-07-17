@@ -5,6 +5,10 @@ description: Apply when a user supplies a Figma link, screenshot, visual materia
 
 # Figma Flow to Implementation
 
+## Output Language
+
+All user-facing output and every UI document produced by this skill must use the language requested by the user. If no language is specified, use the language of the user's request. Translate screen names, section headings, labels, tables, prompts, and Mermaid labels; keep code, paths, identifiers, Figma IDs, commands, and required proper names unchanged.
+
 ## Workflow
 
 1. Inspect all provided visual material. Do not treat link order as screen-transition order.

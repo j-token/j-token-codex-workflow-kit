@@ -9,6 +9,8 @@ Turn an approved PRD or equivalent confirmed requirements into an implementable,
 
 ## Language policy
 
+All user-facing output and every artifact produced by this skill must use the language requested by the user. If no language is specified, use the language of the user's request.
+
 Write the full specification in the language the user requested. If none was specified, use the language of the user's request. Localize headings, tables, templates, examples, and Mermaid labels. Leave code, commands, API names, identifiers, paths, and required proper names unchanged.
 
 ## Process

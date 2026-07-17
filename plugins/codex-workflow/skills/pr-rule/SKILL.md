@@ -7,6 +7,7 @@ description: Apply when the user explicitly asks Codex to create a pull request.
 
 ## Required rules
 
+- All user-facing output and every artifact produced by this skill must use the language requested by the user. If no language is specified, use the language of the user's request.
 - Write the PR title and body in the language requested by the user. If none was specified, use the language of the user's request.
 - Create the PR as a draft.
 - Ask the user to choose the target branch; never select it arbitrarily.
