@@ -65,6 +65,7 @@ After implementation, the new task should verify the result and report what was 
 | `technical-spec-writer` | Turns an approved PRD into an implementation contract with APIs, protocols, boundaries, and tests. |
 | `bug-report-to-fix` | Captures bug details first, then moves into debugging and fixing after approval. |
 | `figma-flow-to-implementation` | Converts Figma links, screenshots, or UI references into a screen flow and implementation spec. |
+| `prototype-design` | Creates lightweight, clickable web prototypes with Mermaid flow documentation and screenshots before the design or user flow is finalized. |
 | `workflow-composer` | Combines multiple workflows when a request mixes requirements, bugs, and UI work. |
 | `start-implementation-thread` | Selects a GPT-5.6 model and reasoning effort from the approved document, then starts implementation in a new task. |
 | `orchestrate-subagents` | Gates subagent creation and assigns only necessary in-task work with role routing, minimal context, checkpoints, and file ownership. |
