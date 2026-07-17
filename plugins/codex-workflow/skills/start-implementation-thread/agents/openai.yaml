@@ -1,4 +1,4 @@
 interface:
-  display_name: "Start Implementation Task"
-  short_description: "Start a new task with an appropriate model and reasoning effort"
-  default_prompt: "Use $start-implementation-thread to hand the approved technical specification to a new task for implementation and verification."
+  display_name: "구현 작업 시작"
+  short_description: "적절한 모델과 추론 강도로 새 구현 작업을 시작합니다."
+  default_prompt: "$start-implementation-thread를 사용해 승인된 기술 스펙을 구현·검증할 새 작업으로 넘겨줘."

@@ -1,19 +1,20 @@
 ---
 name: branch-rule
-description: Apply before creating a Git branch. Use for requests to create, cut, or name a branch.
+description: Git 브랜치를 생성하거나 분기하거나 이름을 정하기 전에 적용합니다. 사용자가 브랜치 생성, 분기 또는 이름 결정을 요청할 때 의미가 분명한 접두사 규칙을 제공합니다.
 ---
 
-# Branch Naming Rules
+# 브랜치 이름 규칙
 
-## Output Language
+## 출력 언어
 
-All user-facing output produced by this skill must use the language requested by the user. If no language is specified, use the language of the user's request. Keep commands, paths, branch names, identifiers, and other technical tokens unchanged.
+이 스킬이 만드는 모든 사용자 대상 출력, 문서, 프롬프트, 보고서, 계획, 스펙 및 기타 산출물은 한국어로 작성합니다. 제목, 섹션, 레이블, 표, 체크리스트, 다이어그램, 템플릿도 한국어로 작성합니다. 코드, 명령어, 파일 경로, 식별자, API 이름, 모델 ID, 프로토콜 이름과 필수 고유명사는 번역하지 않습니다.
 
-Use a descriptive, lowercase branch name with one of these prefixes:
+브랜치 이름에 prefix 를 달아서 사용한다. 의미를 알 수 있는 적절한 이름을 사용한다.
+아래의 이름만을 사용한다.
 
-- `feat/…`
-- `bug/…`
-- `perf/…`
-- `refactor/…`
+- feat/…
+- bug/…
+- perf/…
+- refactor/…
 
-Use `misc/…` only for a small collection of unrelated minor changes.
+자잘한 변경점을 모은 브랜치는 **misc** 접두사를 사용한다.

@@ -1,4 +1,4 @@
 interface:
-  display_name: "Git Push Safety"
-  short_description: "Safe branch-explicit git push workflow"
-  default_prompt: "Use $git-push-safety before running or explaining any git push command."
+  display_name: "Git Push 안전"
+  short_description: "브랜치를 명시하는 안전한 git push 워크플로우"
+  default_prompt: "git push 명령을 실행하거나 설명하기 전에 $git-push-safety를 사용해줘."

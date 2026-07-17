@@ -1,32 +1,38 @@
 ---
 name: commit-rule
-description: Apply when the user explicitly asks Codex to create a Git commit. Require explicit authorization for every commit.
+description: 사용자가 현재 요청에서 Git 커밋 생성을 명시적으로 요청했을 때 적용합니다. 모든 커밋마다 명시적 허락을 요구하고 작업별 커밋과 메시지 규칙을 제공합니다.
 ---
 
-# Commit Rules
+# 커밋 규칙
 
-## Output Language
+## 출력 언어
 
-All user-facing output produced by this skill must use the language requested by the user. If no language is specified, use the language of the user's request. Keep Git commands, commit messages when constrained by repository rules, paths, identifiers, and other technical tokens unchanged unless translation is explicitly requested.
+이 스킬이 만드는 모든 사용자 대상 출력, 문서, 프롬프트, 보고서, 계획, 스펙 및 기타 산출물은 한국어로 작성합니다. 제목, 섹션, 레이블, 표, 체크리스트, 다이어그램, 템플릿도 한국어로 작성합니다. 코드, 명령어, 파일 경로, 식별자, API 이름, 모델 ID, 프로토콜 이름과 필수 고유명사는 번역하지 않습니다.
 
-## Authorization
+## 커밋 허락
 
-- Create a commit only after the user explicitly authorizes it for the current request.
-- Do not infer permission to commit from a request to change code.
-- Treat committing and pushing as separate actions; confirm authorization for each.
+- 모든 커밋은 매번 유저의 명시적인 허락을 받은 뒤에만 진행합니다.
+- 유저가 커밋을 명시적으로 언급하지 않은 경우 커밋은 금지됩니다.
+- 푸시 요청이 포함된 경우에도 커밋과 푸시는 각각 허락 여부를 확인합니다.
 
-## Language
+## 사용 언어
 
-Write commit messages in the language the user requested for this task. If the user did not specify one, use the language of their request.
+커밋 언어는 한국어를 사용해야한다.
 
-## Scope
+## 단일 원칙
 
-Make each commit independently reviewable and limited to one coherent change. Split unrelated work into separate commits.
+반드시 각 작업별로 한국어로 커밋 메시지를 분리해서 커밋해야합니다.
 
-Use one of these prefixes:
+이는 작업자가 한번에 하나의 작업을 쉽게 검토 하기 위함입니다.
 
-- `feat:`
-- `bug:`
-- `perf:`
-- `refactor:`
-- `misc:` for minor unrelated changes.
+## 커밋 prefix
+
+커밋 메시지에 prefix 를 달아서 사용한다.
+아래의 이름만을 사용한다.
+
+- feat:…
+- bug:…
+- perf:…
+- refactor:…
+
+자잘한 변경점을 모은 커밋은 **misc** 접두사를 사용한다.
