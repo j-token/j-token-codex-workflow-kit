@@ -1,6 +1,6 @@
 interface:
   display_name: "PRD Writer"
-  short_description: "기술 제품 PRD를 명확한 요구사항으로 구조화"
+  short_description: "Structure a technical product PRD into clear requirements"
   default_prompt: "Use $prd-writer to draft a technical PRD from my rough product requirements."
 
 policy:

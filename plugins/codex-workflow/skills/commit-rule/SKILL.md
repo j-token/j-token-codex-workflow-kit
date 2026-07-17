@@ -1,34 +1,28 @@
 ---
 name: commit-rule
-description: 유저의 명시적인 허락을 받아 커밋할 때 반드시 참고해야할 커밋 skill입니다. 예시 지시)커밋해줘,커밋해,커밋
+description: Apply when the user explicitly asks Codex to create a Git commit. Require explicit authorization for every commit.
 ---
 
-# 커밋 규칙
+# Commit Rules
 
-## 커밋 허락
+## Authorization
 
-- 모든 커밋은 매번 유저의 명시적인 허락을 받은 뒤에만 진행합니다.
-- 유저가 커밋을 명시적으로 언급하지 않은 경우 커밋은 금지됩니다.
-- 푸시 요청이 포함된 경우에도 커밋과 푸시는 각각 허락 여부를 확인합니다.
+- Create a commit only after the user explicitly authorizes it for the current request.
+- Do not infer permission to commit from a request to change code.
+- Treat committing and pushing as separate actions; confirm authorization for each.
 
-## 사용 언어
+## Language
 
-커밋 언어는 한국어를 사용해야한다.
+Write commit messages in the language the user requested for this task. If the user did not specify one, use the language of their request.
 
-## 단일 원칙
+## Scope
 
-반드시 각 작업별로 한국어로 커밋 메시지를 분리해서 커밋해야합니다.
+Make each commit independently reviewable and limited to one coherent change. Split unrelated work into separate commits.
 
-이는 작업자가 한번에 하나의 작업을 쉽게 검토 하기 위함입니다.
+Use one of these prefixes:
 
-## 커밋 prefix
-
-커밋 메시지에 prefix 를 달아서 사용한다.
-아래의 이름만을 사용한다.
-
-- feat:…
-- bug:…
-- perf:…
-- refactor:…
-
-자잘한 변경점을 모은 커밋은 **misc** 접두사를 사용한다.
+- `feat:`
+- `bug:`
+- `perf:`
+- `refactor:`
+- `misc:` for minor unrelated changes.

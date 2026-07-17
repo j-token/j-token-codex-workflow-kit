@@ -1,89 +1,59 @@
 ---
 name: bug-report-to-fix
-description: 사용자가 버그, 불명확한 증상, 스크린샷, 로그, 단순 디버깅 요청을 전달할 때 사용합니다. 먼저 `.codex/temp`에 버그 리포트를 만들고, 재현 정보나 원인 축소 행동을 요청하며, 사용자가 명시적으로 수정/디버깅 시작을 요청한 뒤에만 코드 수정을 시작합니다.
+description: Apply when a user reports a bug, unclear symptom, screenshot, log, or debugging request. First create a bug report in `.codex/temp`, gather reproduction information, and begin code changes only after a later explicit approval.
 ---
 
-# 버그 리포트에서 수정까지
+# Bug Report to Fix
 
-## 진행 흐름
+## Workflow
 
-1. 관찰된 사실과 추정을 분리합니다.
-2. 재현에 필요한 최소 정보를 묻습니다: 행동, 시점, 기대 결과, 실제 결과, 플랫폼, 최근 변경.
-3. 필요하면 원인을 좁히기 위한 구체 행동을 사용자에게 요청합니다.
-4. `.codex/temp` 아래 임시 디버깅 작업 문서를 유지합니다.
-5. 버그 리포트를 제시한 뒤 현재 턴을 끝냅니다. 이후 별도 사용자 메시지에서 리포트 경로 또는 버전을 확인하며 수정/디버깅 시작을 승인하면 `start-implementation-thread`를 적용해 별도의 Codex 작업에서 수정을 시작합니다.
-6. 새 작업은 수정 후 재현, 테스트, 로그 또는 가능한 가장 가까운 확인 방법으로 실제 해결 여부를 검증합니다.
+1. Separate observed facts from assumptions.
+2. Gather the minimum reproduction information: action, timing, expected result, actual result, platform, and recent changes.
+3. Ask for the smallest concrete action that can narrow the cause when necessary.
+4. Maintain a temporary debugging document under `.codex/temp`.
+5. Present the report and end the turn. Only after the user explicitly approves starting a fix or debugging in a later message, apply `start-implementation-thread` with the report path.
+6. In the new task, verify the fix through reproduction, tests, logs, or the closest available check.
 
-## 플랫폼 규칙
+## Language policy
 
-플랫폼 전용 문제라고 단정하지 않습니다.
+Write every user-facing and generated document—including headings, tables, templates, diagram labels, and prose—in the language the user requested. If no language was explicitly requested, use the language of the user's request. Keep code, commands, identifiers, and required proper names unchanged.
 
-사용자가 "iOS에서 테스트했다"고 하면 iOS만 확인된 환경으로 기록합니다. Android에서 테스트했거나 사용자가 명시하지 않았다면 Android가 영향받지 않는다고 추정하지 않습니다.
+## Platform rule
 
-## 임시 문서
+Do not assume a problem is platform-specific. For example, “tested on iOS” only establishes that iOS was tested; it does not establish that Android is unaffected.
 
-레포 루트 기준 `.codex/temp/` 디렉터리에 작성하고, 없으면 생성합니다. 모든 문서는 `cognitive-writing` 스킬의 원칙을 따라 작성합니다.
+## Temporary document
 
-파일명은 다음 형식을 사용합니다.
+Create `.codex/temp/` at the repository root when it does not exist. Follow `cognitive-writing` and use:
 
 ```text
 .codex/temp/YYYYMMDD-HHMM-bug-<topic>-workflow.md
 ```
 
-## 임시 문서 템플릿
+Use this localized template:
 
 ```md
-# 디버깅 작업 문서
+# Debugging work document
 
 ## TL;DR
-
-## 관찰된 증상
-
-## 사용자가 한 행동
-
-## 기대 결과
-
-## 실제 결과
-
-## 확인된 환경
-
-## 아직 확인하지 않은 환경
-
-## 첨부 자료
-
-## 사실
-
-## 추정
-
-## 사용자 확인 필요
-
-## 재현 경로
-
-## 원인 후보
-
-## 조사할 파일/로그
-
-## 수정 방향
-
-## 검증 기준
-
-## 수정 결과
+## Observed symptoms
+## User actions
+## Expected result
+## Actual result
+## Confirmed environments
+## Environments not yet checked
+## Attached material
+## Facts
+## Assumptions
+## User confirmation needed
+## Reproduction path
+## Candidate causes
+## Files / logs to investigate
+## Proposed fix
+## Acceptance criteria
+## Fix result
 ```
 
-## 사용자 행동 요청
+## Code-change gate
 
-진단을 위해 사용자에게 특정 행동을 요청할 수 있습니다.
-
-다음처럼 명확하게 말합니다.
-
-```text
-아래 행동을 수행해서 버그 원인을 좁힙니다.
-```
-
-가능한 원인을 구분하는 데 필요한 가장 작은 행동만 목록으로 제시합니다.
-
-## 코드 수정 게이트
-
-사용자가 수정/디버깅 시작을 요청하기 전에는 리포트 작성, 재현 계획, 조사 질문까지만 진행합니다.
-
-`먼저 버그 리포트를 만들고 수정해줘` 같은 최초 요청은 승인으로 인정하지 않습니다. 리포트를 제시한 뒤 별도 사용자 메시지에서 리포트 경로 또는 버전을 확인하며 `승인` 또는 `이 리포트대로 수정 시작`이라고 한 경우에만 현재 작업에서 직접 코드를 수정하지 말고 `start-implementation-thread`에 버그 리포트 경로를 전달합니다. 새 작업은 관련 코드를 확인하고 가장 작은 안전한 수정을 적용한 뒤 반드시 검증합니다.
+Before explicit later approval, limit work to reporting, investigation questions, and a reproduction plan. A first message such as “write a bug report and fix it” is not approval. After presenting the report, require a separate message that identifies its path or version and explicitly approves the fix; then hand off through `start-implementation-thread`, rather than editing code in the current task.

@@ -1,96 +1,38 @@
 ---
 name: orchestrate-subagents
-description: 하위 에이전트를 소환하려는 경우 또는 구현을 시작하기전 이 스킬을 사용하여 에이전트 소환 지침을 확인하세요.
+description: Apply before spawning subagents or beginning implementation that may benefit from delegation. Delegate only independent, bounded work after a creation gate, with explicit roles, file ownership, validation, and integration by the root agent.
 ---
 
-# 하위 에이전트 오케스트레이션
+# Subagent Orchestration
 
-## 목적
+Do not create subagents by default. The root agent remains responsible for validation, conflict resolution, and final integration. This skill never bypasses document-approval or new-implementation-task gates.
 
-하위 에이전트는 기본적으로 만들지 않습니다. 루트 에이전트가 생성 게이트를 통과한 현재 단계만 최소 컨텍스트로 위임하고, 결과 검증·충돌 해결·최종 통합을 직접 책임집니다. 이 스킬은 기존 문서 승인 및 새 구현 작업 생성 게이트를 우회하지 않습니다.
+## Creation gate
 
-사용자가 `$orchestrate-subagents`를 명시하면 반드시 이 지침을 적용합니다. 다만 명시 호출도 생성 게이트를 우회하지 않으므로, 조건이 부족하면 0명을 유지하고 루트가 직접 수행합니다.
+Spawn a subagent for a current step only when all conditions hold: delegation has a clear context, speed, or quality benefit; the work can run independently from verified inputs; the prompt can state a complete input and output contract; the root can validate and integrate the result; and the benefit exceeds token, concurrency, and coordination cost. Otherwise use zero subagents.
 
-## 생성 게이트
+Do not spawn for explanation, status checks, or a local one-file edit. Do not treat `ultra`, file count, or task count alone as justification. If spawning is unavailable, work directly unless the user explicitly requires delegation, in which case report the limitation.
 
-현재 평가하는 단일 단계에 다음 다섯 조건이 모두 참일 때만 생성합니다.
+## Roles and selection
 
-| 조건 | 참인 기준 |
-| --- | --- |
-| 분리 이익 | 루트 직접 수행보다 컨텍스트 격리, 속도 또는 품질 이익이 분명하다. |
-| 독립 실행 | 선행 결과가 없거나 루트가 이미 검증해 현재 단계 입력이 확정됐다. 읽기 전용으로 안전하게 격리되는 경우도 포함한다. |
-| 완결 계약 | 입력 범위와 기대 출력을 하나의 프롬프트로 완결할 수 있다. |
-| 루트 검증 | 파일, 테스트 또는 근거로 결과를 검증·통합할 방법이 있다. |
-| 비용 정당성 | 토큰, 동시성, 조정 비용보다 기대 이익이 크다. |
+Respect explicit user model, headcount, and effort requests, then applicable `AGENTS.md`, then these defaults:
 
-- 하나라도 거짓이면 현재 단계의 에이전트 수는 0명입니다.
-- 설명, 상태 확인, 한 파일의 국소 수정은 기본적으로 생성하지 않습니다.
-- Ultra, 파일 수, 작업 항목 수만으로 조건을 참으로 판단하지 않습니다.
-- 생성 수는 게이트를 통과한 현재 실행 가능 계약 수와 가용 슬롯 중 작은 값입니다.
-- `spawn_agent`가 노출되지 않으면 생성하지 않고 루트가 직접 수행합니다. 사용자가 위임 자체를 명시 요구해 직접 수행이 의미를 바꾸면 도구 미노출을 보고합니다.
+| Role | Model | Best use |
+| --- | --- | --- |
+| Sol | `gpt-5.6-sol` | Orchestration; ambiguous or high-risk decisions; security, data, compatibility, bug, logic, and edge-case review. |
+| Terra | `gpt-5.6-terra` | Evidence-based hypotheses, research interpretation, planning, and specification-conformance validation. |
+| Luna | `gpt-5.6-luna` | Broad repository exploration, mechanical transformations, test execution, and fully specified low-judgment implementation. |
 
-## 역할과 모델 선택
+Record the selection rationale in the internal work contract. Only claim an actual model assignment when the tool schema supports it and it is observable.
 
-모델 인자의 노출 여부와 관계없이 먼저 아래 표로 하위 작업의 역할과 선택 모델을 정합니다. 사용자의 명시 모델·인원·추론 강도, 적용 가능한 `AGENTS.md`, 이 표 순으로 우선합니다. 지원되지 않는 사용자 지정은 임의 대체하지 말고 보고합니다.
+## Prompt and ownership
 
-| 역할 | 모델 | 우선 작업 | 기본 배정하지 않을 작업 |
-| --- | --- | --- | --- |
-| Sol | `gpt-5.6-sol` | 오케스트레이션, 모호한 고위험 판단, 보안·데이터·호환성 판단, 버그·논리·엣지 케이스 리뷰 | 단순 탐색, 정형 변환, 확정 스펙의 기계적 구현 |
-| Terra | `gpt-5.6-terra` | 근거 기반 가설, 조사 해석, 계획, 스펙 적합성 검증 | 대규모 반복 탐색, 추측 없는 기계적 구현 |
-| Luna | `gpt-5.6-luna` | 넓은 저장소 탐색, 정형 변환, 테스트 실행, 추측·설계 판단이 필요 없는 확정 스펙 구현 | 제품 결정, 고위험 최종 판단 단독 확정 |
+Default `fork_turns` to `none`; pass only the minimum needed context. Every subagent prompt must have these semantic sections, with every heading translated into the user's language: **Instructions**, **Goal**, **Work to do**, **Do not**, and **Constraints and notes**. These English names are placeholders for the required meanings, not literal headings to emit. State input scope, expected evidence, validation method, ownership, and exact writable files.
 
-선택 근거를 한 문장으로 내부 작업 계약에 남깁니다. 호출 스키마에 `model`이 있고 `fork_turns`가 `"all"`이 아닐 때만 같은 모델을 호출 인자로 전달합니다. `reasoning_effort`는 사용자가 명시했고 스키마가 지원할 때만 전달합니다. 모델 인자가 없으면 선택을 계속 유도하되 직접 지정했다고 보고하지 않습니다. 실제 자식 모델을 관측할 수 없으면 모델 일치 검증은 `Inconclusive`이며 수용 통과로 주장하지 않습니다.
+For read-only, review, and validation work, state that no files may be changed. For writing work, list allowed files exactly. A subagent must report—not edit—any file outside that list which it thinks requires modification.
 
-## 컨텍스트와 프롬프트
+Do not give two writers overlapping files. Before spawning, compare their expected write sets; if they overlap, assign one writer and make the others read-only. When later work depends on earlier work, follow: delegate current step → root validates → establish next input and ownership → re-evaluate the gate.
 
-기본 `fork_turns`는 `"none"`입니다. 최근 대화가 필수일 때만 최소 양의 정수 문자열을 사용합니다. 호출별 모델 override가 필요하면 `"all"`을 사용하지 않습니다. 전체 대화 기록을 복사하지 말고, 하위 작업이 독립 수행할 수 있는 최소 입력만 제공합니다.
+## Integration
 
-모든 하위 에이전트 메시지는 다음 다섯 헤딩과 순서를 정확히 사용합니다. 역할이나 선택 모델을 메시지에 넣지 않습니다.
-
-```md
-# 지시 사항
-
-## 목표
-
-<한 문장 또는 한 문단의 단일 완료 결과>
-
-## 해야할것
-
-- <입력 범위>
-- <수행 작업>
-- <기대 출력과 근거 형식>
-- 수정 허용 파일: <저장소 상대 경로 목록 | 없음>
-
-## 하면 안될 것
-
-- <범위 밖 조사·판단·수정 또는 금지 도구·행동>
-- 수정 금지 파일: <저장소 상대 경로 목록 | 모든 파일>
-- 수정 허용 목록 밖 파일은 변경하지 말고 필요한 경로와 이유를 보고할 것
-
-## 유의사항
-
-- 검증 기준: <루트가 결과를 확인할 방법>
-- 파일 소유권: <읽기 전용 | 단일 작성자, 수정 허용 파일 목록>
-- 결과 보고: <요약, 근거 경로, 테스트 결과 등>
-```
-
-읽기·검증·리뷰 작업에는 `수정 허용 파일: 없음`, `수정 금지 파일: 모든 파일`을 명시합니다. 쓰기 작업에는 개별 허용 파일을 정확히 열거합니다. 허용 목록 밖 변경이 필요하면 에이전트가 수정하지 않고 루트에 경로와 이유를 보고하게 합니다.
-
-## 소유권, 대기와 통합
-
-- 작성 에이전트는 한 명이 기본입니다. 같은 파일을 동시에 두 명에게 쓰게 하지 않습니다.
-- spawn 전에 예상 수정 파일 집합의 교집합을 확인합니다. 충돌 가능성이 있거나 쓰기 범위를 안전하게 나눌 수 없으면 작성자를 한 명으로 줄이고 나머지는 읽기 전용으로 배정합니다.
-- 여러 작성자가 꼭 필요하면 각 수정 허용 파일 집합이 서로소여야 합니다. 각 프롬프트에 다른 작성자의 파일과 충돌 가능 파일을 수정 금지로 적습니다.
-- Luna가 구현하면 Terra와 Sol은 기본적으로 읽기·검증·리뷰만 합니다.
-- 가용 슬롯이 부족하면 실행 중인 관련 결과를 먼저 기다립니다. 기다린 뒤에도 생성할 수 없으면 루트가 직접 수행합니다.
-- 요청한 결과를 모두 기다리고, 근거·테스트·변경 파일을 수정 허용 목록과 대조한 뒤 통합합니다. 실패하면 원인을 분류해 범위를 축소하여 한 번 재시도하거나 루트가 보완합니다.
-
-## 순차 체크포인트
-
-선행 결과에 의존하는 작업은 전체를 한 번에 생성하지 않습니다. `현재 단계 위임 → 루트 검증 → 다음 단계 입력·범위 확정 → 생성 게이트 재평가 → 다음 단계 위임` 순서를 지킵니다.
-
-현재 단계의 프롬프트에는 후속 단계 수행과 연쇄 spawn을 금지합니다. 루트가 파일·테스트·근거로 현재 결과를 검증하기 전에는 다음 단계를 계획하거나 생성하지 않습니다. 검증 실패 시 다음 단계로 진행하지 않고 현재 단계를 재시도하거나 루트가 직접 보완합니다.
-
-## 결과 보고
-
-최종 보고에는 생성 여부와 근거, 실제 위임한 현재 단계, 검증 결과, 충돌·실패 처리, 모델 적용 상태를 구분해 적습니다. 모델 인자를 직접 전달하지 못했거나 실제 모델을 관측하지 못했으면 그 사실을 명확히 밝힙니다.
+Wait for requested results, validate evidence, tests, and changed files against the contract, then integrate. On failure, narrow and retry once or complete the small gap directly. Report whether delegation occurred, why, what was delegated, validation results, conflicts or failures, and any unverified model assignment.
