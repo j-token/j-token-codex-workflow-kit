@@ -1,7 +1,7 @@
 interface:
   display_name: "기술 스펙 작성기"
   short_description: "승인된 요구사항을 구현 가능한 기술 계약으로 구체화합니다."
-  default_prompt: "$technical-spec-writer를 사용해 승인된 PRD를 읽고 기술 스펙을 작성해줘."
+  default_prompt: "$technical-spec-writer를 사용해 승인된 PRD를 읽고 기술 스펙을 작성한 뒤 독립 감사를 요청해줘."
 
 policy:
   allow_implicit_invocation: true
