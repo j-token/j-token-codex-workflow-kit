@@ -1,6 +1,6 @@
 {
   "name": "codex-workflow",
-  "version": "0.7.0",
+  "version": "0.8.0",
   "description": "A workflow skill collection for clarifying requirements, debugging, Figma/UI work, PRDs, technical specifications, approved implementation in a separate task, and safe subagent orchestration.",
   "author": {
     "name": "j-token",

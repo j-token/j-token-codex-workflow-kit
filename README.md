@@ -4,7 +4,7 @@
 
 TL;DR: `j-token-workflow-kit` is a Codex workflow plugin that turns rough requests into reviewable specs, code changes, and verification steps. It is designed for work that starts vague and needs to become concrete before implementation.
 
-Current plugin version: `0.6.0`
+Current plugin version: `0.8.0`
 
 ## Why This Exists
 
