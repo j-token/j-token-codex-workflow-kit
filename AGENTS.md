@@ -10,6 +10,7 @@
 - Write and maintain every skill source file in English.
 - This includes `SKILL.md` files, skill metadata, agent configuration, templates, examples, and instructional prose shipped with a skill.
 - Do not translate skill source files into the user's language.
+- Whenever you add a new skill or modify an existing skill, update both `README.md` and `README.ko.md`.
 
 ## Required Language Rule in Every Skill
 
