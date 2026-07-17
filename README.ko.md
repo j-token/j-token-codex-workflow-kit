@@ -66,6 +66,7 @@ Codex는 확정 문서를 다시 읽고 GPT-5.6 Sol, Terra, Luna 중 적절한 �
 | `technical-spec-writer` | 확정된 PRD를 API, 프로토콜, 경계, 테스트가 포함된 구현 계약으로 구체화합니다. |
 | `bug-report-to-fix` | 버그 정보를 먼저 기록하고, 승인 후 디버깅과 수정으로 이어갑니다. |
 | `figma-flow-to-implementation` | Figma 링크, 스크린샷, UI 자료를 화면 흐름과 구현 문서로 바꿉니다. |
+| `prototype-design` | 확정 전 아이디어를 Mermaid 문서, 스크린샷, HTML/CSS/JS 프로토타입으로 보여줍니다. |
 | `workflow-composer` | 요구사항, 버그, UI 작업이 섞인 요청에 여러 워크플로우를 조합합니다. |
 | `start-implementation-thread` | 확정된 문서에 맞는 GPT-5.6 모델과 추론 강도를 선택해 새 작업에서 구현을 시작합니다. |
 | `orchestrate-subagents` | 현재 작업에서 필요한 하위 에이전트만 생성 게이트, 역할 라우팅, 최소 컨텍스트, 순차 체크포인트, 파일 소유권 규칙으로 배정합니다. |

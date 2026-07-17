@@ -1,0 +1,7 @@
+interface:
+  display_name: "Prototype Design"
+  short_description: "Turn early ideas into clickable visual prototypes."
+  default_prompt: "Use $prototype-design to create a screen flow and clickable browser prototype for this idea."
+
+policy:
+  allow_implicit_invocation: true
