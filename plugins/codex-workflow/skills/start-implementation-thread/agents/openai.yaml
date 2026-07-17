@@ -1,4 +1,4 @@
 interface:
   display_name: "구현 작업 시작"
   short_description: "감사가 통과된 문서를 새 구현 작업에서 실행합니다."
-  default_prompt: "$start-implementation-thread를 사용해 감사가 통과되고 승인된 기술 스펙을 구현·검증할 새 작업으로 넘겨줘."
+  default_prompt: "$start-implementation-thread를 사용해 감사가 통과되고 승인된 기술 스펙을 구현 전·후 무컨텍스트 독립 리뷰를 수행할 새 작업으로 넘겨줘."
