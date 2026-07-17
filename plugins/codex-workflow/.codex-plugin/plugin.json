@@ -1,6 +1,6 @@
 {
   "name": "codex-workflow",
-  "version": "0.10.0",
+  "version": "0.11.0",
   "description": "요구사항 정리, 디버깅, Figma/UI 작업, PRD와 기술 스펙, 무컨텍스트 에이전트 독립 감사, 승인 후 별도 작업 구현과 구현 전후 독립 리뷰를 위한 한국어 워크플로우 스킬 모음입니다.",
   "author": {
     "name": "j-token",
