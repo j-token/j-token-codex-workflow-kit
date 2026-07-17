@@ -1,115 +1,120 @@
 # j-token-workflow-kit
 
-[한국어 README](README.ko.md)
+요약: `j-token-workflow-kit`은 모호한 작업 요청을 대화로 정리하고, 문서화하고, Codex 리뷰 코멘트로 다듬은 뒤 구현과 검증까지 이어가기 위한 Codex 워크플로우 플러그인입니다.
 
-TL;DR: `j-token-workflow-kit` is a Codex workflow plugin that turns rough requests into reviewable specs, code changes, and verification steps. It is designed for work that starts vague and needs to become concrete before implementation.
+이 플러그인은 한국어만 지원하기 위해 만든 스킬 모음입니다. 다른 언어가 필요하면 이 저장소를 포크한 뒤 `SKILL.md`, 스킬 메타데이터, 템플릿과 사용자 출력 규칙을 원하는 언어로 번역해 사용하세요.
 
-Current plugin version: `0.8.0`
+현재 플러그인 버전: `0.9.0`
 
-## Why This Exists
+## 왜 필요한가
 
-Codex can implement quickly, but unclear requests can still produce unclear changes. This kit adds a lightweight workflow around the conversation:
+Codex는 빠르게 구현할 수 있지만, 요구사항이 흐릿하면 결과물도 흐릿해질 수 있습니다. 이 키트는 구현 전에 요구사항을 한 번 정리하고, 리뷰 가능한 문서로 고정한 뒤, 그 문서를 기준으로 구현하도록 돕습니다.
 
-- clarify the requirement through dialogue
-- turn the clarified requirement into a PRD
-- confirm the PRD, then write and review a technical spec
-- implement from the approved technical spec
-- verify the result after implementation
+핵심 흐름은 다음과 같습니다.
 
-## Workflow
+- 작업 요구사항을 워크플로우로 시작합니다.
+- 대화를 통해 요구사항을 정리합니다.
+- 정리된 내용을 PRD로 만들고 검토합니다.
+- PRD를 확정한 뒤 기술 스펙을 작성하고 검토합니다.
+- 별도로 승인한 기술 스펙을 기준으로 구현합니다.
+- 구현 완료 후 결과를 확인합니다.
+
+## 작동 방식
 
 ```mermaid
 flowchart LR
-    A["Work request"] --> B["Clarify requirements through conversation"]
-    B --> C["Write and review the PRD"]
-    C --> D["Confirm the PRD in a follow-up message"]
-    D --> E["Write and review the technical spec"]
-    E --> F["Approve the technical spec in a follow-up message"]
-    F --> G["Select model and reasoning effort"]
-    G --> H["Implement in a new thread"]
-    H --> I["Verify after implementation"]
+    A["작업 요구사항"] --> B["대화로 요구사항 정리"]
+    B --> C["PRD 작성·검토"]
+    C --> D["별도 메시지로 PRD 확정"]
+    D --> E["기술 스펙 작성·검토"]
+    E --> F["별도 메시지로 기술 스펙 승인"]
+    F --> G["모델·추론 강도 선택"]
+    G --> H["새 thread에서 구현"]
+    H --> I["구현 완료 후 확인"]
 ```
 
-## How To Use
+## 사용 방법
 
-Start with a request that mentions the workflow you want to use:
+먼저 작업 요청에서 사용할 워크플로우를 언급합니다.
 
 ```text
-Use the workflow to organize this requirement.
+이 요구사항을 워크플로우로 정리해줘.
 ```
 
-Codex should first ask only the questions needed to reduce ambiguity. After the requirement is clear, ask it to write the PRD:
+Codex는 바로 구현하지 않고, 불명확한 부분을 줄이기 위한 질문을 먼저 합니다. 요구사항이 충분히 정리되면 PRD 작성을 요청합니다.
 
 ```text
-Draft the agreed requirement as a PRD.
+정리된 요구사항을 PRD로 작성해줘.
 ```
 
-Review the PRD, then confirm that specific path or version in a separate message and request the technical spec. Review the technical spec in the same way before approving implementation.
+작성된 PRD는 Codex의 검토 시스템으로 확인합니다. PRD를 확정한 뒤 별도 메시지로 기술 스펙 작성을 요청하고, 기술 스펙도 같은 방식으로 검토합니다.
 
-When Codex presents the technical spec, that response ends the documentation turn. In a separate follow-up message, approve the specific technical spec and ask Codex to implement it:
+Codex가 기술 스펙을 제시하면 그 응답에서 문서화 작업을 끝냅니다. 다음의 별도 메시지에서 특정 기술 스펙을 확인하고 구현을 승인합니다.
 
 ```text
-Approve .codex/temp/my-feature-technical-spec.md and start implementation.
+\\.codex\\temp\\my-feature-technical-spec.md를 승인하고 구현을 시작해줘.
 ```
 
-Codex rereads the approved document, selects an appropriate GPT-5.6 Sol, Terra, or Luna model and reasoning effort, then creates a new thread in the same project for implementation. A request such as “document it, then implement it” is not approval; it still needs the separate follow-up message.
+Codex는 확정 문서를 다시 읽고 GPT-5.6 Sol, Terra, Luna 중 적절한 모델과 추론 강도를 선택한 뒤, 같은 프로젝트의 새 thread를 만들어 구현을 넘깁니다. `문서 작성 후 구현해줘`처럼 최초 요청에 함께 넣은 구현 의사는 승인이 아니며, 위와 같은 별도 후속 메시지가 필요합니다.
 
-After implementation, the new task should verify the result and report what was checked.
+구현이 끝나면 새 작업에서 어떤 항목을 확인했는지 보고하고, 필요한 경우 남은 리스크를 함께 정리합니다.
 
-## Included Skills
+## 포함된 스킬
 
-| Skill | Purpose |
+| 스킬 | 역할 |
 |---|---|
-| `requirements-to-spec` | Turns rough requirements into a PRD first, then a technical spec after separate confirmation. |
-| `prd-writer` | Drafts technical PRDs for products, SDKs, CLIs, runtimes, and developer tools. |
-| `technical-spec-writer` | Turns an approved PRD into an implementation contract with APIs, protocols, boundaries, and tests. |
-| `bug-report-to-fix` | Captures bug details first, then moves into debugging and fixing after approval. |
-| `figma-flow-to-implementation` | Converts Figma links, screenshots, or UI references into a screen flow and implementation spec. |
-| `prototype-design` | Creates lightweight, clickable web prototypes with Mermaid flow documentation and screenshots before the design or user flow is finalized. |
-| `workflow-composer` | Combines multiple workflows when a request mixes requirements, bugs, and UI work. |
-| `start-implementation-thread` | Selects a GPT-5.6 model and reasoning effort from the approved document, then starts implementation in a new task. |
-| `orchestrate-subagents` | Gates subagent creation and assigns only necessary in-task work with role routing, minimal context, checkpoints, and file ownership. |
-| `cognitive-writing` | Keeps documents easy to review by reducing cognitive load. |
-| `branch-rule` | Defines branch naming rules. |
-| `commit-rule` | Defines commit message rules. |
-| `git-push-safety` | Prevents accidental pushes to the wrong branch. |
-| `pr-rule` | Defines pull request writing rules. |
+| `requirements-to-spec` | 거친 요구사항을 먼저 PRD로 정리하고, 별도 확인 후 기술 스펙으로 구체화합니다. |
+| `prd-writer` | 제품, SDK, CLI, 런타임, 개발자 도구를 위한 기술 PRD를 작성합니다. |
+| `technical-spec-writer` | 확정된 PRD를 API, 프로토콜, 경계, 테스트가 포함된 구현 계약으로 구체화합니다. |
+| `bug-report-to-fix` | 버그 정보를 먼저 기록하고, 승인 후 디버깅과 수정으로 이어갑니다. |
+| `figma-flow-to-implementation` | Figma 링크, 스크린샷, UI 자료를 화면 흐름과 구현 문서로 바꿉니다. |
+| `prototype-design` | 확정 전 아이디어를 Mermaid 문서, 스크린샷, HTML/CSS/JS 프로토타입으로 보여줍니다. |
+| `workflow-composer` | 요구사항, 버그, UI 작업이 섞인 요청에 여러 워크플로우를 조합합니다. |
+| `start-implementation-thread` | 확정된 문서에 맞는 GPT-5.6 모델과 추론 강도를 선택해 새 작업에서 구현을 시작합니다. |
+| `orchestrate-subagents` | 현재 작업에서 필요한 하위 에이전트만 생성 게이트, 역할 라우팅, 최소 컨텍스트, 순차 체크포인트, 파일 소유권 규칙으로 배정합니다. |
+| `cognitive-writing` | 리뷰하기 쉬운 문서를 쓰도록 인지 부하를 줄이는 글쓰기 규칙을 제공합니다. |
+| `branch-rule` | 브랜치 이름 규칙을 정의합니다. |
+| `commit-rule` | 커밋 메시지 규칙을 정의합니다. |
+| `git-push-safety` | 잘못된 브랜치로 push하는 사고를 막습니다. |
+| `pr-rule` | PR 작성 규칙을 정의합니다. |
 
-## Recommended Prompts
+## 추천 프롬프트
+
+임시 문서 경로를 사용자에게 표시할 때는 `\\.codex\\temp\\...`처럼 역슬래시를 두 번 씁니다. `\.codex\temp`처럼 쓰면 `\.`가 하나의 문자로 처리되어 앞의 역슬래시가 사라질 수 있습니다.
 
 ```text
-Use the workflow to clarify this requirement before implementation.
+구현 전에 이 요구사항을 워크플로우로 정리해줘.
 ```
 
 ```text
-Draft the agreed requirement as a PRD.
+정리된 요구사항을 PRD로 작성해줘.
 ```
 
 ```text
-Draft this product idea as a PRD.
+이 제품 아이디어를 PRD로 작성해줘.
 ```
 
 ```text
-Approve .codex/temp/my-feature-prd.md and write the technical spec.
+\\.codex\\temp\\my-feature-prd.md를 승인하고 기술 스펙을 작성해줘.
 ```
 
 ```text
-Review this spec and leave comments for anything unclear.
+이 스펙을 리뷰하고 모호한 부분에 코멘트를 남겨줘.
 ```
 
 ```text
-Apply the review comments.
+리뷰 코멘트를 반영해줘.
 ```
 
 ```text
-Approve .codex/temp/my-feature-technical-spec.md and start implementation.
+\\.codex\\temp\\my-feature-technical-spec.md를 승인하고 구현을 시작해줘.
 ```
 
 ```text
-Verify the implementation and summarize the result.
+구현 결과를 확인하고 검증 내용을 요약해줘.
 ```
 
-## Repository Layout
+## 저장소 구조
 
 ```text
 .agents/plugins/marketplace.json
@@ -118,6 +123,6 @@ plugins/codex-workflow/skills/
 plugins/codex-workflow/references/
 ```
 
-## License
+## 라이선스
 
 [Apache License 2.0](LICENSE)

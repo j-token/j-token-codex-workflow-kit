@@ -1,7 +1,7 @@
 interface:
-  display_name: "Prototype Design"
-  short_description: "Turn early ideas into clickable visual prototypes."
-  default_prompt: "Use $prototype-design to create a screen flow and clickable browser prototype for this idea."
+  display_name: "프로토타입 설계"
+  short_description: "초기 아이디어를 클릭 가능한 시각적 프로토타입으로 만듭니다."
+  default_prompt: "$prototype-design을 사용해 이 아이디어의 화면 흐름과 클릭 가능한 브라우저 프로토타입을 만들어줘."
 
 policy:
   allow_implicit_invocation: true

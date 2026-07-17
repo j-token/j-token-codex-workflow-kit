@@ -1,51 +1,75 @@
 ---
 name: pr-rule
-description: Apply when the user explicitly asks Codex to create a pull request. Create a draft PR and confirm the target branch with the user.
+description: 사용자가 pull request 생성을 명시적으로 요청했을 때 적용합니다. draft PR을 만들고 대상 브랜치를 사용자에게 확인하며 제목과 본문 양식을 강제합니다.
 ---
 
-# Pull Request Rules
+# PR 규칙
 
-## Required rules
+## 출력 언어
 
-- All user-facing output and every artifact produced by this skill must use the language requested by the user. If no language is specified, use the language of the user's request.
-- Write the PR title and body in the language requested by the user. If none was specified, use the language of the user's request.
-- Create the PR as a draft.
-- Ask the user to choose the target branch; never select it arbitrarily.
-- Put the title only in GitHub's PR title field. Do not repeat it in the body.
-- Preserve the template below. Do not add overlapping sections such as separate "Expected result", "Actual result", "Facts", "Assumptions", or a diff-redundant "Changes made" section.
+이 스킬이 만드는 모든 사용자 대상 출력, 문서, 프롬프트, 보고서, 계획, 스펙 및 기타 산출물은 한국어로 작성합니다. 제목, 섹션, 레이블, 표, 체크리스트, 다이어그램, 템플릿도 한국어로 작성합니다. 코드, 명령어, 파일 경로, 식별자, API 이름, 모델 ID, 프로토콜 이름과 필수 고유명사는 번역하지 않습니다.
 
-## PR body template
+## 필수 항목(필수 준수)
+
+- PR 언어는 한국어를 사용해야한다.
+- 반드시 draft PR로 설정한다.
+- 임의로 머지 브랜치를 정하지 말고 반드시 유저에게 질의한다.
+- PR 제목은 GitHub PR title 필드에만 작성하고, PR 본문에는 제목을 반복 작성하지 않는다.
+- PR 본문은 아래 PR 양식의 마크다운 구조를 유지해서 작성해야 한다.
+- `기대 결과`, `실제 결과`, `사실`, `추정`처럼 서로 비슷한 판단 섹션을 반복하지 않는다.
+- 기대하는 동작은 `배경/맥락`이나 `검증 기준`에 흡수하고, 판단 근거는 필요한 경우 `관찰된 문제 또는 목표`에 포함한다.
+- `수정 결과`처럼 diff와 중복되는 섹션은 기본 양식에 넣지 않는다.
+
+## PR 양식
+
+아래 내용은 반드시 한국어로 기재하고, 마크다운 heading/list/code block 문법이 깨지지 않도록 작성한다.
 
 ```md
-## TL;DR
+## 요약
 
-## Background / context
+## 배경/맥락
 
-## Observed problem or goal
+## 관찰된 문제 또는 목표
 
-## Approach
+## 수정 방향
 
-## Changed files
+## 수정된 파일
 
-## Acceptance criteria
+## 검증 기준
 
-## Tests
+## 테스트 목록
 
-## Official documentation or references
+## 공식 문서 또는 참고 자료
 
-## Related PRs (optional)
+## 관련 PR(옵션)
 ```
 
-Translate the template headings and all prose into the user's requested language when creating the PR.
+## 작성 규칙
 
-## Writing rules
+- `배경/맥락`에는 왜 이 PR이 필요한지와 기대하는 동작을 짧게 함께 적는다.
+- `관찰된 문제 또는 목표`에는 리뷰어가 판단해야 할 문제와 근거를 목록으로 적는다.
+- `수정 방향`에는 구현 의도와 선택한 접근을 적는다.
+- `검증 기준`에는 PR이 의도대로 동작한다고 판단할 수 있는 조건을 적는다.
+- 이미 diff로 확인 가능한 세부 구현 결과를 별도 `수정 결과` 섹션으로 반복하지 않는다.
 
-- Explain why the PR is needed and the expected behavior in **Background / context**.
-- List the issue or goal that the reviewer must assess, with evidence, in **Observed problem or goal**.
-- Explain the chosen implementation in **Approach**.
-- State the conditions that demonstrate success in **Acceptance criteria**.
-- Do not duplicate implementation details already visible in the diff.
+## PR 제목 규칙
 
-## Title and branch format
+PR 제목은 아래 형식으로 작성한다.
 
-Use `<branch-prefix>: <concise title>` for the PR title. Branches must use one of `feat/`, `bug/`, `perf/`, `refactor/`, or `misc/` and have a meaningful descriptive suffix.
+```text
+브랜치 접두사: 제목
+```
+
+예시: `bug: PR 본문 제목 중복 방지`
+
+### 브랜치 이름 규칙(필수 준수)
+
+브랜치 이름에 prefix 를 달아서 사용한다. 의미를 알 수 있는 적절한 이름을 사용한다.
+아래의 이름만을 사용한다.
+
+- feat/…
+- bug/…
+- perf/…
+- refactor/…
+
+자잘한 변경점을 모은 브랜치는 **misc** 접두사를 사용한다.

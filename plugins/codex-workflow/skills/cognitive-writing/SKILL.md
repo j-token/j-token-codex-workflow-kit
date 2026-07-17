@@ -1,41 +1,220 @@
 ---
 name: cognitive-writing
-description: Structure plans, PRs, technical documents, reports, and implementation notes to minimize reader cognitive load. Apply when creating or revising written engineering artifacts.
+description: 독자의 인지 부하를 최소화하도록 글을 구조화하는 공통 규칙입니다. 인지부하론(내재적/외재적/본유적 부하, 작업기억 보호) 4원칙, GitHub-flavored Markdown 작성 규칙, 공통 자가 점검 체크리스트를 제공합니다. PR·plan·기획서·기술 문서·이슈 코멘트 등 "타인이 읽고 판단해야 할 모든 글"에 적용합니다. 사용자가 "글 정리해줘", "문서 다듬어줘", "리뷰어 부담 줄여줘", "마크다운 양식 점검", "인지 부하 줄여서 작성" 같은 요청을 하거나, pr-rule·plan-rule 같은 파생 스킬이 공통 원칙을 참조할 때 사용합니다.
 ---
 
-# Cognitive Writing
+# 인지 부하를 줄이는 글쓰기
 
-Write for a reader who should understand the decision and verify the work without reconstructing the author's reasoning.
+## 출력 언어
 
-## Language policy
+이 스킬이 만드는 모든 사용자 대상 출력, 문서, 프롬프트, 보고서, 계획, 스펙 및 기타 산출물은 한국어로 작성합니다. 제목, 섹션, 레이블, 표, 체크리스트, 다이어그램, 템플릿도 한국어로 작성합니다. 코드, 명령어, 파일 경로, 식별자, API 이름, 모델 ID, 프로토콜 이름과 필수 고유명사는 번역하지 않습니다.
 
-All user-facing output and every artifact produced by this skill must use the language requested by the user. If no language is specified, use the language of the user's request.
+이 스킬은 "타인이 읽고 빠르게 판단해야 할 글"을 작성·정리할 때 따르는 **공통 원칙**을 정의한다. 인간의 작업기억 한계 때문에 글이 잘못 구조화되면 독자는 "내용 본질"이 아니라 "양식 해석"에 인지 자원을 소모하게 된다. 이 스킬은 그 외재적 부하를 제거하고 본유적 부하를 의도된 방향으로 유도하는 데 초점을 둔다.
 
-Write the artifact in the language the user requested. If no language was explicitly requested, use the language of the user's request. This includes headings, tables, checklists, examples, and Mermaid labels. Preserve code, commands, API names, identifiers, and required proper names.
+PR(`pr-rule`)·plan(`plan-rule`) 같은 파생 스킬은 이 스킬의 원칙을 그대로 따르고, 그 위에 자기 도메인 양식만 얹는다.
 
-## Core rules
+## 판단 상태와 독자 순서
 
-1. Start with a TL;DR of at most three lines: purpose, essential change, and verification state.
-2. Separate facts, assumptions, decisions, open questions, and excluded alternatives.
-3. Organize information in the reader's order of understanding: motivation, structure, decisions, entry points, then verification.
-4. Give each change or plan step one compact block containing purpose, files or entry point, key decision, and verification.
-5. Explain only non-obvious decisions and their trade-offs. State external constraints with a source when relevant.
-6. Name a clear entry point for large changes: the first file, module, or section to inspect.
-7. Define uncommon domain terms on first use.
-8. Separate mechanical noise—formatting, import sorting, unused-variable removal, renames, and comment-only changes—from behavioral changes.
+- 독자가 작성자의 추론을 다시 조립하지 않아도 결정과 검증 방법을 이해할 수 있게 쓴다.
+- 사실, 추정, 결정, 열린 질문과 제외된 대안을 서로 구분한다.
+- 동기 → 구조 → 결정 → 진입점 → 검증 순서로 정보를 배치한다.
+- 외부 제약이 판단에 영향을 주면 가능한 경우 출처를 함께 적는다.
+- 포매팅, import 정렬, 미사용 변수 제거, 리네이밍, 주석만 바꾸는 작업 같은 기계적 잡음을 동작 변경과 분리한다.
 
-## Markdown
+## 적용 범위
 
-Use valid GitHub-flavored Markdown. Leave blank lines around headings, lists, and code blocks. Give code fences a language where possible. Use descriptive headings and avoid vague titles such as “Update” or “Cleanup”.
+다음 모든 글에 적용한다.
 
-## Visuals
+- PR 본문, 이슈/티켓 코멘트
+- 구현 plan, 설계 문서, RFC
+- 기술 블로그, 회의록, 의사결정 로그
+- 사용자 교육 자료, 온보딩 문서
 
-Add a small visual when it materially reduces ambiguity: before/after images for visual UI changes, a short recording for interaction, and a Mermaid diagram for architecture, data flow, state, or multi-step navigation. Put the diagram before the detailed explanation and split complex topics into small diagrams by viewpoint.
+단순 잡담·체크리스트 토글 메시지처럼 "한 번 읽고 버리는 글"에는 양식 비용이 본질을 넘지 않도록 [조건부 축약](#7-조건부-축약--양식-비용-회피)을 적용한다.
 
-## Final check
+## 인지 부하 4원칙 (필독)
 
-- Can the reader identify why the work exists and what success means from the first screen?
-- Are facts distinct from assumptions and pending decisions?
-- Does every non-trivial step identify an entry point and verification?
-- Are unrelated changes separated?
-- Is the artifact localized to the user-requested language and free of broken Markdown?
+인지 부하론은 인간의 작업기억이 한 번에 보유 가능한 정보량이 매우 제한된다는 사실에서 출발한다. 부하는 세 가지로 나뉘며, 작성자는 이 분류에 따라 다르게 대응한다. 이론적 배경과 변경 전/후 예시는 [references/cognitive-load.md](references/cognitive-load.md)에서 깊이 다룬다.
+
+- **내재적 부하 ↓ — 분할하라**
+  글 하나는 하나의 관심사만. 큰 변경·큰 주제는 단계적 글 체인으로 쪼갠다. 본질적 복잡도는 줄일 수 없지만 **분할**할 수 있다.
+
+- **외재적 부하 ↓ — 제거하라**
+  제목·요약·고정 스키마·시각자료로 맥락을 즉시 전달한다. 포매팅·리네이밍·잡음 변경 같은 본질 외 정보는 분리한다. **작성자가 가장 많이 통제할 수 있는 부하**이므로 제거가 최우선이다.
+
+- **본유적 부하 유도 — 동기·트레이드오프를 적어라**
+  독자가 "왜 이렇게 했나"에 사고를 집중하도록 동기·대안·트레이드오프를 명시한다. 독자가 같은 추론을 반복하지 않도록 한다.
+
+- **작업기억 보호 — 점진적으로 공개하라**
+  요약 → 요약 → 상세 순서로 공개한다. 한 화면에서 전체 골격을 잡을 수 있어야 한다. 긴 코드·인용은 본문에 풀어쓰지 말고 파일 인용(`path:line`) 또는 별도 블록으로 분리한다.
+
+## 글 작성 규칙 (필수 준수)
+
+### 1. 고정 스키마 강제 (외재적 부하 ↓)
+
+매 글은 동일 골격으로 출력한다. 도메인별 세부 항목은 다르지만 다음 흐름은 공통이다.
+
+```text
+제목(1줄) → 요약(3줄 이내) → 본문(왜 → 무엇 → 어떻게 검증) → 리스크/후속
+```
+
+독자가 매번 새 포맷을 해석할 필요가 없게 한다.
+
+### 2. 단일 관심사 — 단위 분할 (내재적 부하 ↓)
+
+글 하나는 하나의 관심사만 다룬다. 다음은 모두 다른 관심사이므로 한 글에 섞지 않는다.
+
+- 기능 추가 / 버그 수정 / 리팩토링
+- 포매팅·린트 / 리네이밍 / 의존성 업그레이드
+- 설계 결정 / 실행 계획 / 회고
+
+큰 주제는 글 체인으로 나눈다. 예: PR 1(인터페이스) → PR 2(구현) → PR 3(마이그레이션) → PR 4(구버전 제거).
+
+### 3. 단위 크기 — 7±2 규칙 (작업기억 보호)
+
+목록·단계·섹션 수는 한 화면에 잡히도록 **7±2 이내**로 유지한다. 9개를 넘으면 분할을 고려한다. 인간의 작업기억 한계는 약 7±2 chunk다.
+
+### 4. 분할 주의 회피 — 한 단위 = 한 블록 (외재적 부하 ↓)
+
+한 단위(단계·결정·항목)는 한 블록에 묶어 한 화면에서 매핑이 끝나게 한다. 정보를 여러 곳에 흩지 않는다. 예시 블록 형태:
+
+- **목적**: 이 단위가 무엇을 해결하는가
+- **진입점**: `path/to/file.ts:42`(`funcName`) 형식으로 가장 먼저 볼 위치 명시
+- **핵심 결정**: 당연하지 않은 결정 1줄 (왜 이렇게)
+- **검증/통과 기준**: 끝났음을 어떻게 확인하는가
+
+### 5. 트레이드오프 명시 (본유적 부하 유도)
+
+"왜 이렇게 했는가"를 적을 때는 **당연하지 않은 결정**만 적되, 대안 1~2개와 채택 이유를 각 1줄로 적는다.
+
+```md
+- 대안 A: … — 단점 X로 미채택
+- 대안 B: … — 단점 Y로 미채택
+- 채택안: … — 이유 Z
+```
+
+### 6. 점진적 공개 (작업기억 보호)
+
+상세 코드 스니펫·긴 인용은 본문에 풀어쓰지 말고 "필요 시 펼치기" 블록·파일 인용(`path:line`)으로 분리한다. 요약 → 단계 → 상세 순으로 한 단계씩 노출한다.
+
+### 7. 조건부 축약 — 양식 비용 회피
+
+단일 파일 변경·트리비얼 수정·1줄 의사결정처럼 변경 본질이 작은 글은 `요약 + 단계(1~3개) + 검증` 정도로 축약해도 된다. 양식이 변경 본질보다 무거워지지 않게 한다.
+
+### 8. 사전지식 의존 ↓ — 도메인 용어 1줄 설명
+
+독자가 모를 수 있는 약어·외부 표준·도메인 용어는 **첫 등장 시 1줄 설명**을 단다.
+
+```md
+> **RTR(Refresh Token Rotation)**: 재발급 시마다 리프레시 토큰을 새로 발급하고 이전 토큰을 무효화하는 방식.
+```
+
+### 9. 시각자료 (외재적 부하 ↓)
+
+UI·다이어그램·플로우 변경은 텍스트로만 전달하지 않는다.
+
+- **정적 UI**: 변경 전/후 스크린샷
+- **인터랙션**: 짧은 화면 녹화(5~15초)
+- **아키텍처/플로우**: Mermaid·이미지 다이어그램
+- **Codex Desktop**: Mermaid가 바로 렌더링되는 환경이면 여러 개의 작은 Mermaid 다이어그램을 적극적으로 사용한다. 하나의 거대한 다이어그램보다 `flowchart`(흐름), `sequenceDiagram`(상호작용), `stateDiagram`(상태), `erDiagram`(데이터 관계)처럼 관점별로 분리해 작업기억 부담을 낮춘다.
+
+다이어그램은 텍스트를 대체하는 장식이 아니라 독자의 첫 이해 경로다. 복잡한 설명이 3개 이상의 단계·주체·상태를 포함하면 먼저 Mermaid로 골격을 보여주고, 본문은 다이어그램의 판단 근거와 예외를 보강한다.
+
+## 마크다운 작성 규칙 (필수 준수)
+
+본문은 **GitHub-flavored Markdown**으로 작성한다. 렌더링 시 줄바꿈·단락·헤딩이 의도대로 동작하도록 다음 규칙을 반드시 따른다. 이 규칙이 빠지면 잘 쓴 본문도 한 덩어리로 뭉쳐 보여 외재적 부하가 폭증한다.
+
+### 줄바꿈과 단락
+
+- **단락 사이는 반드시 빈 줄 1개**로 구분한다. 단순 개행만으로는 단락이 분리되지 않고 한 줄로 합쳐져 렌더링된다.
+- 한 단락 내에서 **강제 줄바꿈**이 필요하면 줄 끝에 **공백 2개**를 두거나 `<br>`을 사용한다.
+- **헤딩(`#`, `##`, `###`) 앞뒤로 빈 줄 1개**를 둔다. 빈 줄이 없으면 헤딩이 인식되지 않거나 위·아래 텍스트와 붙어 렌더링된다.
+
+### 리스트
+
+- 리스트와 일반 단락 사이에는 빈 줄 1개를 둔다(빈 줄이 없으면 리스트 마지막 항목과 다음 단락이 합쳐진다).
+- 리스트 항목 안에 여러 줄 본문을 넣으려면 본문을 **2 또는 4 공백 들여쓰기**로 이어 쓴다.
+- 중첩 리스트는 2 또는 4 공백 들여쓰기로 통일한다(혼용 금지).
+- 한 단위가 여러 줄(목적·진입점·핵심 결정·검증)이라면 각 줄을 별도 리스트 항목(`- **목적**: …`)으로 적어 분리가 보이게 한다.
+
+### 코드 블록과 인라인 코드
+
+- 코드 블록은 항상 ```` ```언어 ```` ~ ```` ``` ```` 펜스로 감싸고 **언어를 명시**한다(`bash`, `ts`, `tsx`, `py`, `md`, `json` 등).
+- 인라인 코드는 백틱 1개로 감싼다. 파일 인용은 `path/to/file.ts:42`, 함수 인용은 `funcName()` 형식.
+- 코드 블록·표·리스트 앞뒤로 빈 줄 1개를 둔다(이전 단락에 흡수되는 사고 방지).
+
+### 표
+
+- 표는 헤더 행 다음에 구분선(`|---|---|`)을 둔다. 정렬이 필요하면 `:---`(좌), `:---:`(중앙), `---:`(우) 사용.
+- 표 앞뒤로 빈 줄 1개를 둔다.
+
+### 링크와 이미지
+
+- 링크: `[표시 텍스트](URL)`. 파일 진입점은 `[file.ts:42](path/to/file.ts#L42)` 형태로 라인까지 연결한다.
+- 이미지·스크린샷: `![alt](url)`. PR 본문에 드래그 업로드된 URL을 그대로 사용한다.
+
+### 자주 깨지는 안티 패턴
+
+- 단락 사이에 빈 줄을 빼먹어 단락이 합쳐짐 → 빈 줄 1개 추가.
+- 헤딩 위·아래에 빈 줄이 없어 텍스트가 붙음 → 빈 줄 1개 추가.
+- 코드 블록 언어 미지정으로 하이라이트 누락 → 항상 언어 태그.
+- 표·코드 블록·리스트 직전에 빈 줄이 없어 이전 단락에 흡수됨 → 빈 줄 1개 추가.
+- 한 단위 블록을 한 줄로 이어 써서 분리가 보이지 않음 → 각 줄을 별도 리스트 항목으로.
+- `Update`, `Cleanup`처럼 의미가 불분명한 제목을 사용함 → 독자가 목적을 알 수 있는 구체적인 제목으로 바꾼다.
+
+## 공통 자가 점검 체크리스트 (출력 직전 반드시 통과)
+
+도메인별 추가 점검은 파생 스킬(`pr-rule`, `plan-rule`)이 얹는다. 다음은 모든 글에 공통 적용한다. 각 항목 뒤의 화살표는 어떤 인지 부하를 줄이는지를 나타낸다.
+
+- [ ] **제목 1줄로 의도가 전달되는가** (외재적 부하 ↓)
+- [ ] **요약 3줄 이내 요약이 있는가** (작업기억 ↓)
+- [ ] **하나의 관심사만 다루는가** (내재적 부하 ↓)
+- [ ] **단위 수가 7±2 이내인가** (작업기억 ↓)
+- [ ] **변경 동기(왜)를 본문보다 먼저 설명했는가** (본유적 부하 유도)
+- [ ] **트레이드오프·대안 검토를 명시했는가** (본유적 부하 유도)
+- [ ] **진입점(가장 먼저 볼 파일/섹션)을 명시했는가** (외재적 부하 ↓)
+- [ ] **도메인 용어에 1줄 설명을 달았는가** (사전지식 의존 ↓)
+- [ ] **잡음 변경을 별도 글/커밋으로 분리했는가** (외재적 부하 ↓)
+- [ ] **UI/다이어그램 변경 시 시각자료가 있는가** (외재적 부하 ↓)
+- [ ] **Codex Desktop 환경에서 복잡한 흐름·상호작용·상태·데이터 관계를 여러 Mermaid 다이어그램으로 분리했는가** (작업기억 ↓)
+- [ ] **마크다운 양식이 깨지지 않는가** — 단락 사이 빈 줄, 헤딩 앞뒤 빈 줄, 코드 블록 언어 명시, 표·리스트 앞뒤 빈 줄 (외재적 부하 ↓)
+
+체크리스트 중 하나라도 미통과 시 출력을 보류하고 본문을 수정한다. 무엇을·왜·어떻게 검증을 한 흐름으로 읽히게 만든다.
+
+## 작성 흐름
+
+1. **요청 해석** — 글의 목적·독자·범위를 식별. 모호하면 질문으로 좁힌다.
+2. **컨텍스트 확보** — 추측 금지. 관련 파일·기존 패턴·근거 자료를 직접 확인한다.
+3. **단위 분해** — 본문을 7±2개 단위로 분해. 초과 시 글 체인으로 재구성.
+4. **각 단위 한 블록 작성** — 목적/진입점/핵심 결정/검증.
+5. **트레이드오프 정리** — 대안과 채택 이유를 1줄씩.
+6. **자가 점검 통과 후 출력**.
+
+## 자주 발생하는 안티 패턴
+
+| 안티 패턴 | 인지 부하 영향 | 대응 |
+|---|---|---|
+| 줄글로만 작성, 골격 없음 | 외재적 부하 — 골격 파악 불가 | 고정 스키마 강제(규칙 1) |
+| 한 글에 기능+리팩토링+포매팅 혼재 | 내재적 부하 폭증 | 단일 관심사 원칙, 글 체인 분할(규칙 2) |
+| 단위가 15개 이상 | 작업기억 초과 | 단계적 글 체인으로 분할(규칙 3) |
+| 한 단위가 한 줄짜리, 정보 흩어짐 | 분할 주의 — 별도 추론 필요 | 한 단위 = 한 블록(규칙 4) |
+| 동기(왜) 누락 | 본유적 부하가 추론으로 낭비 | 트레이드오프 명시(규칙 5) |
+| 요약 없이 거대 본문 | 작업기억 초과 | 3줄 요약을 본문 최상단(규칙 1·6) |
+| 트리비얼 변경에 풀 양식 | 양식 비용 > 변경 본질 | 조건부 축약(규칙 7) |
+| 도메인 약어 남발 | 사전지식 격차 | 첫 등장 시 1줄 설명(규칙 8) |
+| 스크린샷 없는 UI 변경 | 외재적 부하 — UI 상상 필요 | 시각자료 첨부(규칙 9) |
+| 단락 사이 빈 줄 누락 | 외재적 부하 — 덩어리 텍스트 | 마크다운 작성 규칙 준수 |
+
+## 파생 스킬과의 관계
+
+이 스킬은 "공통 인지 부하 원칙"만 정의한다. 도메인별 양식·체크리스트는 파생 스킬이 추가로 정의한다.
+
+- `pr-rule` — 위 원칙 + PR 양식(작업 목적/핵심 변경/리뷰 진입점/테스트 목록/관련 PR)과 `bug/*` 추가 양식.
+- `plan-rule` — 위 원칙 + plan 양식(요약/전제·제약/단계/왜/검증/리스크) 및 단계 4줄 블록.
+
+이 스킬과 파생 스킬이 충돌할 경우, **파생 스킬의 도메인 양식이 우선**하고 그 외에는 이 스킬을 따른다.
+
+## 더 깊이 알고 싶을 때
+
+- 인지 부하론의 이론적 배경, 부하 유형별 구체 전술, 변경 전/후 예시, 자주 발생하는 안티 패턴은 [references/cognitive-load.md](references/cognitive-load.md)를 참고한다.
+- 글이 거대해져 분할이 필요할 때, 제목이 떠오르지 않을 때, "왜 이렇게 했는가" 작성이 막힐 때 위 문서를 먼저 열어 본다.
