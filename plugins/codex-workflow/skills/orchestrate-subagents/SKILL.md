@@ -27,7 +27,7 @@ Record the selection rationale in the internal work contract. Only claim an actu
 
 ## Prompt and ownership
 
-Default `fork_turns` to `none`; pass only the minimum needed context. Every subagent prompt must have these localized headings: **Instructions**, **Goal**, **Work to do**, **Do not**, and **Constraints and notes**. State input scope, expected evidence, validation method, ownership, and exact writable files.
+Default `fork_turns` to `none`; pass only the minimum needed context. Every subagent prompt must have these semantic sections, with every heading translated into the user's language: **Instructions**, **Goal**, **Work to do**, **Do not**, and **Constraints and notes**. These English names are placeholders for the required meanings, not literal headings to emit. State input scope, expected evidence, validation method, ownership, and exact writable files.
 
 For read-only, review, and validation work, state that no files may be changed. For writing work, list allowed files exactly. A subagent must report—not edit—any file outside that list which it thinks requires modification.
 

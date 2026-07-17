@@ -22,7 +22,7 @@ Write the complete PRD in the language the user requested. If no language was sp
 
 ## Required PRD structure
 
-Use these sections, localized for the user:
+Use these semantic sections, translating every heading into the user's language (the English names below are placeholders, never mandatory output):
 
 ```md
 # <Product or feature> PRD

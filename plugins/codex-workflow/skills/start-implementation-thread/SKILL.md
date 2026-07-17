@@ -13,7 +13,7 @@ Require all of the following: the technical specification, bug report, or UI imp
 
 ## Language policy
 
-Write all generated task instructions and documents in the language the user requested; if no language was specified, use the language of the user's request. Localize headings, tables, templates, and diagram labels. Preserve code, commands, paths, identifiers, and required proper names.
+Write all generated task instructions and documents in the language the user requested; if no language was specified, use the language of the user's request. This applies to every section heading and section label as well as prose, tables, templates, and diagram labels. The English labels named below are semantic slots, not literal output: translate each one into the target language and keep the section names consistent throughout the handoff. Preserve code, commands, paths, identifiers, and required proper names.
 
 ## Selection
 
@@ -31,9 +31,12 @@ Choose the lowest sufficient effort: `low` for short fully defined work; `medium
 
 Only when `thread/start` and `turn/start` are available to the current model:
 
-1. Tell the user the selected model and effort with a one-sentence reason.
-2. Call `thread/start` with the selected model and project's absolute `cwd`.
-3. Call `turn/start` with the returned `threadId`, selected `effort`, and a localized prompt containing **Instructions**, **Goal**, **Work to do**, **Do not**, **Constraints and notes**, **Original user request**, and a list of approved document paths.
+1. Derive two concise, meaningful task titles from the approved document and the user's request, written in the user's language: one for the originating task that indicates specification or approval, and one for the new task that indicates implementation. Keep the feature or bug subject consistent and distinguish the lifecycle stage in the title.
+2. Tell the user the selected model and effort with a one-sentence reason.
+3. Rename the current task using the available task/thread title operation before handing off, using the specification/approval title.
+4. Call `thread/start` with the selected model and project's absolute `cwd`.
+5. Rename the returned task/thread with the implementation title using the available task/thread title operation before starting its first turn.
+6. Call `turn/start` with the returned `threadId`, selected `effort`, and a localized prompt containing semantic sections for **Instructions**, **Goal**, **Work to do**, **Do not**, **Constraints and notes**, **Original user request**, and a list of approved document paths. Render every section heading in the user's language; do not emit these English labels merely because they are listed here.
 
 The task prompt must require implementation, verification, and reporting; forbid stopping after document reading or handing work to another implementation task. Preserve the original request and classify extra user instructions into goal, work, prohibitions, and constraints. Do not invent scope, implementation methods, worktrees, or constraints.
 

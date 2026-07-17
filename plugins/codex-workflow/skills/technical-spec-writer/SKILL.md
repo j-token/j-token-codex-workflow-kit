@@ -22,7 +22,7 @@ Write the full specification in the language the user requested. If none was spe
 
 ## Required structure
 
-Use these localized sections:
+Use these semantic sections, translating every heading into the user's language (the English names below are placeholders, never mandatory output):
 
 ```md
 # <Feature> technical specification

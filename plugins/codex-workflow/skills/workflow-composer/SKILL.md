@@ -17,7 +17,7 @@ Use supporting skills as their triggers apply: `cognitive-writing`, `branch-rule
 
 ## Language policy
 
-Write all generated documents in the language the user requested; if no language was specified, use the language of the user's request. Apply this to headings, prose, tables, templates, and diagram labels. Preserve code, commands, identifiers, and required proper names.
+Write all generated documents in the language the user requested; if no language was specified, use the language of the user's request. Apply this to every section heading and section label as well as prose, tables, templates, and diagram labels. Translate semantic template labels too; do not leave English section names in an otherwise localized artifact. Preserve code, commands, identifiers, and required proper names.
 
 ## Sequencing and documents
 
