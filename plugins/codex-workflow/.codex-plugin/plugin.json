@@ -1,7 +1,7 @@
 {
   "name": "codex-workflow",
-  "version": "0.9.0",
-  "description": "요구사항 정리, 디버깅, Figma/UI 작업, PRD와 기술 스펙, 승인 후 별도 작업 구현, 안전한 하위 에이전트 오케스트레이션을 위한 한국어 워크플로우 스킬 모음입니다.",
+  "version": "0.10.0",
+  "description": "요구사항 정리, 디버깅, Figma/UI 작업, PRD와 기술 스펙, 외부 thread 독립 감사, 승인 후 별도 작업 구현, 안전한 하위 에이전트 오케스트레이션을 위한 한국어 워크플로우 스킬 모음입니다.",
   "author": {
     "name": "j-token",
     "email": "j-token@example.com",
@@ -10,12 +10,12 @@
   "homepage": "https://github.com/j-token/j-token-workflow-kit",
   "repository": "https://github.com/j-token/j-token-workflow-kit",
   "license": "Apache-2.0",
-  "keywords": ["workflow", "spec", "prd", "technical-spec", "debugging", "figma", "model-selection", "implementation-thread", "codex", "subagents", "orchestration"],
+  "keywords": ["workflow", "spec", "prd", "technical-spec", "spec-audit", "debugging", "figma", "model-selection", "implementation-thread", "codex", "subagents", "orchestration"],
   "skills": "./skills/",
   "interface": {
     "displayName": "Codex 한국어 워크플로우",
-    "shortDescription": "문서를 확정하고 새 작업에서 구현하며 필요한 경우에만 안전하게 위임합니다.",
-    "longDescription": "Codex 한국어 워크플로우는 요구사항 발견, 버그 리포트 기반 디버깅, Figma와 스크린샷 기반 UI 작업, PRD와 기술 스펙 작성을 위한 로컬 스킬 모음입니다. 승인된 구현은 적절한 모델과 추론 강도를 선택해 별도 Codex 작업에서 시작하며, 명확한 파일 소유권으로 필요한 하위 에이전트 작업만 안전하게 위임합니다. Git, PR, 커밋과 기술 글쓰기를 위한 안전 규칙도 포함합니다.",
+    "shortDescription": "기술 스펙을 독립 감사하고 통과한 문서를 새 작업에서 구현합니다.",
+    "longDescription": "Codex 한국어 워크플로우는 요구사항 발견, 버그 리포트 기반 디버깅, Figma와 스크린샷 기반 UI 작업, PRD와 기술 스펙 작성을 위한 로컬 스킬 모음입니다. 작성된 기술 스펙은 별도의 외부 thread에서 실제 저장소와 공식 자료에 대조해 구현 가능성, 블로커와 사실 불일치를 감사합니다. 감사가 통과되고 승인된 구현은 적절한 모델과 추론 강도를 선택해 별도 Codex 작업에서 시작하며, 명확한 파일 소유권으로 필요한 하위 에이전트 작업만 안전하게 위임합니다. Git, PR, 커밋과 기술 글쓰기를 위한 안전 규칙도 포함합니다.",
     "developerName": "j-token",
     "category": "Productivity",
     "capabilities": ["Interactive", "Write", "Code"],
@@ -23,6 +23,7 @@
       "이 요구사항을 명확히 정리하고 PRD를 작성해줘.",
       "이 아이디어를 PRD로 작성해줘.",
       "승인된 PRD를 읽고 기술 스펙을 작성해줘.",
+      "기술 스펙을 외부 thread에서 독립 감사하고 구현 블로커와 사실 불일치를 조사해줘.",
       "먼저 버그 리포트를 작성해줘.",
       "이 UI 자료를 읽고 화면 흐름을 정리해줘.",
       "기술 스펙을 검토한 뒤 별도 메시지에서 구현을 승인할게.",

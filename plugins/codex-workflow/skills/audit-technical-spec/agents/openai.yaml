@@ -1,0 +1,4 @@
+interface:
+  display_name: "기술 스펙 독립 감사"
+  short_description: "외부 작업에서 스펙의 구현 가능성과 사실 정확성을 감사합니다."
+  default_prompt: "$audit-technical-spec을 사용해 이 기술 스펙을 외부 thread에서 독립 감사해줘."
