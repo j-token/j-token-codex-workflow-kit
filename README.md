@@ -1,131 +1,147 @@
 # j-token-workflow-kit
 
-요약: `j-token-workflow-kit`은 모호한 작업 요청을 대화로 정리하고, 문서화하고, Codex 리뷰 코멘트로 다듬은 뒤 구현과 검증까지 이어가기 위한 Codex 워크플로우 플러그인입니다.
+`j-token-workflow-kit`은 사용자가 최소한의 의도만 전달해도 Codex가 저장소와 필요한 외부 자료를 조사하고, 실행 계획과 새 작업용 프롬프트까지 준비하는 한국어 워크플로우 플러그인입니다.
 
-이 플러그인은 한국어를 기본 출력 언어로 사용하는 스킬 모음입니다. 사용자가 언어를 명시적으로 지정하면 사용자 대상 출력, 문서, 프롬프트와 기타 산출물을 해당 언어로 작성합니다.
+현재 플러그인 버전: `1.0.0`
 
-현재 플러그인 버전: `0.11.1`
+## 1.0.0에서 달라진 점
 
-## 왜 필요한가
+기존 흐름은 작업마다 PRD, 기술 스펙, 감사 보고서와 임시 문서를 만들고 단계마다 별도 승인을 요구했습니다. 1.0.0은 작업의 크기와 위험을 먼저 분류합니다.
 
-Codex는 빠르게 구현할 수 있지만, 요구사항이 흐릿하면 결과물도 흐릿해질 수 있습니다. 이 키트는 구현 전에 요구사항을 한 번 정리하고, 리뷰 가능한 문서로 고정한 뒤, 그 문서를 기준으로 구현하도록 돕습니다.
-
-핵심 흐름은 다음과 같습니다.
-
-- 작업 요구사항을 워크플로우로 시작합니다.
-- 대화를 통해 요구사항을 정리합니다.
-- 정리된 내용을 PRD로 만들고 검토합니다.
-- PRD를 확정한 뒤 공개·교차 모듈 경계 중심의 최소 충분 기술 스펙을 작성합니다.
-- 대화 컨텍스트를 상속하지 않은 하위 에이전트가 저장소와 공식 자료를 대조해 구현 가능성, 블로커와 사실 불일치를 감사합니다.
-- 블로커가 없는 기술 스펙을 별도로 승인한 뒤 비차단 발견은 구현 TODO·테스트·ADR·spike로 처리합니다.
-- 구현 직전에 별도의 무컨텍스트 에이전트가 PRD와 스펙의 엣지 케이스, 논리 오류와 충돌을 검토합니다.
-- 구현 완료 후 다른 무컨텍스트 에이전트가 로직 오류, 엣지 케이스, 회귀와 기타 위험을 리뷰합니다.
+- 빠른 작업: 문서를 만들지 않고 사용자의 현재 실행 요청에 따라 같은 작업에서 구현·검증합니다.
+- 계획 작업: `.codex/prompts/active/<slug>.md` 한 파일에 사실, 조건, 결정, 계획, 검증, 모델, 추론 강도와 실행 프롬프트를 모읍니다.
+- 민감 작업: 프롬프트 문서는 하나로 유지하고 삭제, 배포, 외부 전송, 권한 변경과 비가역 데이터 변경 직전에만 별도 승인을 받습니다.
+- PRD, 기술 스펙과 독립 감사는 사용자가 명시적으로 요구하거나 외부 형식·고위험 계약에 실제로 필요할 때만 추가합니다.
 
 ## 작동 방식
 
 ```mermaid
 flowchart LR
-    A["작업 요구사항"] --> B["대화로 요구사항 정리"]
-    B --> C["PRD 작성·검토"]
-    C --> D["별도 메시지로 PRD 확정"]
-    D --> E["기술 스펙 작성"]
-    E --> F["무컨텍스트 에이전트 독립 감사"]
-    F --> G{"블로커 있음?"}
-    G -- "예" --> E
-    G -- "아니오" --> H["비차단 발견 이관·기술 스펙 승인"]
-    H --> I["모델·추론 강도 선택"]
-    I --> J["새 thread 시작"]
-    J --> K["무컨텍스트 문서 논리 검토"]
-    K --> L["구현·1차 검증"]
-    L --> M["무컨텍스트 코드 리뷰"]
-    M --> N["발견 반영·재검증 후 완료"]
+    A["최소 사용자 의도"] --> B["저장소·공식 자료 조사"]
+    B --> C{"작업 등급"}
+    C -- "빠른 작업" --> D["현재 작업에서 구현·검증"]
+    C -- "계획·민감 작업" --> E["단일 프롬프트 문서"]
+    E --> F["계획·모델·추론·프롬프트 검토"]
+    F --> G["새 Codex 작업 생성"]
+    G --> H["구현·검증·보고"]
+    H --> I["프롬프트 문서 보관"]
 ```
 
-## 사용 방법
-
-먼저 작업 요청에서 사용할 워크플로우를 언급합니다.
+## Codex 실행 프롬프트 문서
 
 ```text
-이 요구사항을 워크플로우로 정리해줘.
+.codex/prompts/
+├── README.md
+├── active/<slug>.md
+├── supporting/<slug>/<명시적으로-요청된-문서>.md
+└── archive/YYYY/<slug>.md
 ```
 
-Codex는 바로 구현하지 않고, 불명확한 부분을 줄이기 위한 질문을 먼저 합니다. 요구사항이 충분히 정리되면 PRD 작성을 요청합니다.
+`README.md`는 상태·유형·태그·갱신일로 찾는 카탈로그입니다. 한 작업의 권위 있는 실행 프롬프트는 `active/<slug>.md` 하나이며, 완료되면 내용을 복제하지 않고 상태를 갱신해 `archive/YYYY/`로 옮깁니다. `supporting/`은 사용자가 별도 PRD·기술 스펙을 요청한 경우에만 사용합니다. 최초 프롬프트 생성에서는 카탈로그와 프롬프트 문서로 실제 파일 2개가 생기고, 이후 작업마다 프롬프트 문서 1개를 추가하며 카탈로그를 갱신합니다.
+
+프롬프트 문서에는 다음 정보가 함께 들어갑니다.
+
+- 의도와 완료 상태
+- 범위와 비범위
+- 확인된 사실, 추정과 근거
+- 조건, 결정과 기각한 대안
+- 단계별 구현·검증 계획
+- 권장 모델, 추론 강도와 선택 사유
+- 새 Codex 작업에 그대로 전달할 완전한 프롬프트
+- 결과와 후속
+
+모델과 추론 강도는 사용자가 새 작업을 승인하기 전에 수정할 수 있습니다. 승인 후 Codex 앱의 새 작업 도구가 있으면 해당 설정으로 작업을 만들고, 없거나 실패하면 동일한 모델·추론 강도·프롬프트를 코드 블록으로 출력합니다.
+
+## OS별 바이너리
+
+`codex-workflow` 바이너리는 프롬프트 문서를 로컬 브라우저에서 열고, 사용자가 모델·추론 강도·새 작업용 프롬프트를 수정한 뒤 승인하거나 취소하게 합니다. 서버는 `127.0.0.1`의 임의 포트에만 바인딩되며 외부 스크립트나 네트워크 UI 자산을 사용하지 않습니다.
+
+| 운영체제 | 아키텍처 | 릴리스 파일 |
+| --- | --- | --- |
+| macOS | Apple Silicon | `codex-workflow-darwin-arm64` |
+| macOS | Intel | `codex-workflow-darwin-x64` |
+| Linux | arm64 | `codex-workflow-linux-arm64` |
+| Linux | x64 | `codex-workflow-linux-x64` |
+| Windows | arm64 | `codex-workflow-windows-arm64.exe` |
+| Windows | x64 | `codex-workflow-windows-x64.exe` |
+
+각 릴리스 파일에는 같은 이름의 `.sha256` sidecar가 함께 생성됩니다.
+
+macOS와 Linux:
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/j-token/j-token-codex-workflow-kit/main/scripts/install.sh | sh
+```
+
+Windows PowerShell:
+
+```powershell
+irm https://raw.githubusercontent.com/j-token/j-token-codex-workflow-kit/main/scripts/install.ps1 | iex
+```
+
+특정 버전 설치:
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/j-token/j-token-codex-workflow-kit/v1.0.0/scripts/install.sh | sh -s -- --version 1.0.0
+```
+
+```powershell
+& ([scriptblock]::Create((irm https://raw.githubusercontent.com/j-token/j-token-codex-workflow-kit/v1.0.0/scripts/install.ps1))) -Version 1.0.0
+```
+
+위 설치 URL은 `v1.0.0` tag와 GitHub Release가 게시된 뒤부터 사용할 수 있습니다. 설치 스크립트와 바이너리 버전을 함께 고정하므로 이후 `main`의 변경에 영향을 받지 않습니다.
+
+프롬프트 검토:
 
 ```text
-정리된 요구사항을 PRD로 작성해줘.
+codex-workflow review .codex/prompts/active/<slug>.md --json
 ```
 
-작성된 PRD는 Codex의 검토 시스템으로 확인합니다. PRD를 확정한 뒤 별도 메시지로 기술 스펙 작성을 요청합니다. 기술 스펙이 저장되면 Codex는 `fork_turns: "none"`인 하위 에이전트를 소환해 실제 저장소와 필요한 공식 자료를 대조합니다. 감사를 위해 별도 thread를 만들지 않습니다. 감사 에이전트는 구현 가능성, 블로커, 사실 불일치, 누락된 계약과 검증 공백을 조사하고 `통과`, `조건부 통과`, `차단` 중 하나로 판정한 보고서를 작성합니다.
+승인 결과는 `status`, `path`, `model`, `reasoningEffort`, `prompt`를 가진 JSON으로 stdout에 반환됩니다. 브라우저를 자동으로 열 수 없는 환경에서는 stderr에 표시된 로컬 URL을 직접 열 수 있습니다.
 
-`차단`이면 블로커에 필요한 최소 계약만 기술 스펙에 반영하고 변경된 계약과 직접 영향 범위만 다시 감사합니다. `통과` 또는 `조건부 통과`이고 블로커가 없으면 중요·경미 발견을 구현 TODO·테스트·ADR·spike 또는 영향 영역 보류 조건으로 이관하고 문서화 작업을 끝냅니다. 발견 0건을 만들기 위한 전체 재감사를 반복하지 않습니다. 다음의 별도 메시지에서 특정 기술 스펙을 확인하고 구현을 승인합니다.
+## 사용 예시
 
-전체 SHA-256은 파일 동일성 검증에만 내부적으로 사용합니다. 사용자 대상 응답, 문서, 표와 인계 설명에는 `ABCD…1234`처럼 앞 4자리와 뒤 4자리만 표시합니다.
+간단한 수정은 그대로 요청합니다.
 
 ```text
-\\.codex\\temp\\my-feature-technical-spec.md를 승인하고 구현을 시작해줘.
+이 오타를 고치고 관련 테스트를 실행해줘.
 ```
 
-Codex는 승인된 PRD, 감사가 통과된 기술 스펙과 감사 보고서를 다시 읽고 GPT-5.6 Sol, Terra, Luna 중 적절한 모델과 추론 강도를 선택한 뒤, 같은 프로젝트의 새 thread를 만들어 구현을 넘깁니다. `문서 작성 후 구현해줘`처럼 최초 요청에 함께 넣은 구현 의사는 승인이 아니며, 위와 같은 별도 후속 메시지가 필요합니다.
+조사와 별도 실행 작업이 필요한 목표는 프롬프트로 준비합니다.
 
-새 구현 작업은 코드를 수정하기 전에 대화 컨텍스트가 없는 읽기 전용 에이전트를 소환해 PRD·스펙의 엣지 케이스, 논리 오류, 요구사항 및 저장소와의 충돌을 조사합니다. 실제 구현을 막는 블로커만 문서 단계로 돌려보내고, 중요·경미 발견은 구현 TODO·테스트·ADR·spike로 이관합니다. 구현과 1차 검증 후에는 첫 검토와 다른 무컨텍스트 에이전트가 변경 diff의 로직 오류, 엣지 케이스, 회귀와 기타 위험을 리뷰합니다. 루트 에이전트가 유효한 발견을 반영하고 재검증한 뒤에만 구현 완료를 보고합니다.
+```text
+$setup-codex-prompt를 사용해 이 아이디어를 저장소와 공식 자료에서 조사하고 새 Codex 작업용 프롬프트를 만들어줘.
+```
+
+계획을 본 뒤 모델과 추론 강도를 바꿀 수 있습니다.
+
+```text
+모델은 gpt-5.6-sol, 추론 강도는 high로 바꾸고 이 계획으로 새 작업 시작해줘.
+```
 
 ## 포함된 스킬
 
 | 스킬 | 역할 |
-|---|---|
-| `requirements-to-spec` | 거친 요구사항을 먼저 PRD로 정리하고, 별도 확인 후 기술 스펙으로 구체화합니다. |
-| `prd-writer` | 제품, SDK, CLI, 런타임, 개발자 도구를 위한 기술 PRD를 작성합니다. |
-| `technical-spec-writer` | 확정된 PRD를 공개·교차 모듈 경계 중심의 최소 충분 구현 계약으로 구체화합니다. |
-| `audit-technical-spec` | 기술 스펙의 핵심 계약과 블로커를 독립 감사하고 비차단 세부사항은 구현 TODO·테스트·ADR·spike로 이관합니다. |
-| `bug-report-to-fix` | 버그 정보를 먼저 기록하고, 승인 후 디버깅과 수정으로 이어갑니다. |
-| `figma-flow-to-implementation` | Figma 링크, 스크린샷, UI 자료를 화면 흐름과 구현 문서로 바꿉니다. |
-| `prototype-design` | 확정 전 아이디어를 Mermaid 문서, 스크린샷, HTML/CSS/JS 프로토타입으로 보여줍니다. |
-| `workflow-composer` | 요구사항, 버그, UI 작업이 섞인 요청에 여러 워크플로우를 조합합니다. |
-| `start-implementation-thread` | 확정된 문서에 맞는 GPT-5.6 모델과 추론 강도를 선택해 구현 전 문서 논리 검토와 구현 후 코드 리뷰를 필수로 수행할 새 작업을 시작합니다. |
-| `orchestrate-subagents` | 선택적 구현 위임과 필수 무컨텍스트 스펙 감사·구현 전후 리뷰를 역할 라우팅, 최소 컨텍스트, 순차 체크포인트, 파일 소유권 규칙으로 배정합니다. |
-| `cognitive-writing` | 리뷰하기 쉬운 문서를 쓰도록 인지 부하를 줄이는 글쓰기 규칙을 제공합니다. |
-| `branch-rule` | 브랜치 이름 규칙을 정의합니다. |
-| `commit-rule` | 커밋 메시지 규칙을 정의합니다. |
-| `git-push-safety` | 잘못된 브랜치로 push하는 사고를 막습니다. |
-| `pr-rule` | PR 작성 규칙을 정의합니다. |
+| --- | --- |
+| `setup-codex-prompt` | 최소 의도에서 사실·조건·계획·모델·추론 강도·실행 프롬프트를 단일 프롬프트 문서로 만듭니다. |
+| `requirements-to-spec` | 거친 요구사항을 조사해 Codex 실행 프롬프트로 수렴시키고, 명시적으로 필요한 경우에만 보조 문서를 연결합니다. |
+| `start-implementation-thread` | 승인된 모델·추론 강도·실행 프롬프트로 새 Codex 작업을 만들고 실패 시 같은 내용을 출력합니다. |
+| `bug-report-to-fix` | 간단한 버그는 바로 수정하고 복잡한 버그만 실행 프롬프트 준비 흐름으로 올립니다. |
+| `figma-flow-to-implementation` | UI 흐름과 에셋을 조사하고 작업 등급에 따라 바로 구현하거나 프롬프트로 계획합니다. |
+| `workflow-composer` | 요구사항, 버그와 UI 작업을 조합하되 산출물을 단일 Codex 실행 프롬프트로 수렴시킵니다. |
+| `prd-writer` | 명시적으로 요청된 장기 제품 범위 문서를 작성합니다. |
+| `technical-spec-writer` | 명시적으로 요청된 장기 공개 기술 계약을 작성합니다. |
+| `audit-technical-spec` | 명시 요청 또는 고위험 계약에만 독립 감사를 적용합니다. |
+| `orchestrate-subagents` | 독립 병렬화나 검토 이점이 있는 작업만 하위 에이전트에 배정합니다. |
+| `prototype-design` | 확정 전 아이디어를 Mermaid나 프로토타입으로 보여줍니다. |
+| `cognitive-writing` | 사용자 대상 문서의 인지 부하와 Markdown 오류를 줄입니다. |
+| `branch-rule`, `commit-rule`, `git-push-safety`, `pr-rule` | Git 브랜치, 커밋, push와 PR의 안전 규칙을 제공합니다. |
 
-## 추천 프롬프트
+## 문서 관리 근거
 
-임시 문서 경로를 사용자에게 표시할 때는 `\\.codex\\temp\\...`처럼 역슬래시를 두 번 씁니다. `\.codex\temp`처럼 쓰면 `\.`가 하나의 문자로 처리되어 앞의 역슬래시가 사라질 수 있습니다.
+1.0.0은 MediaWiki의 카탈로그·랜딩 페이지, OCLC FAST의 낮은 비용 패싯 분류, Diátaxis의 독자 요구 분리, ADR의 작은 장기 결정 기록과 Plannotator `setup goal`의 검증 가능한 팩트 구조를 비교해 설계했습니다.
 
-모든 스킬은 요청된 문서의 작성 또는 갱신을 마친 뒤 최종 응답에 각 문서를 `[문서 이름](절대 경로)` 형식의 Markdown 링크로 첨부합니다. 링크의 절대 경로는 독립된 디렉터리 세그먼트를 유지하며, Windows 경로를 문자열로 표시할 때는 각 역슬래시를 두 번 씁니다.
-
-```text
-구현 전에 이 요구사항을 워크플로우로 정리해줘.
-```
-
-```text
-정리된 요구사항을 PRD로 작성해줘.
-```
-
-```text
-이 제품 아이디어를 PRD로 작성해줘.
-```
-
-```text
-\\.codex\\temp\\my-feature-prd.md를 승인하고 기술 스펙을 작성해줘.
-```
-
-```text
-이 기술 스펙을 대화 컨텍스트가 없는 에이전트로 독립 감사하고 구현 가능성, 블로커와 사실 불일치를 조사해줘.
-```
-
-```text
-리뷰 코멘트를 반영해줘.
-```
-
-```text
-\\.codex\\temp\\my-feature-technical-spec.md를 승인하고 구현을 시작해줘.
-```
-
-```text
-구현 결과를 확인하고 검증 내용을 요약해줘.
-```
+자세한 비교와 채택·기각 사유는 [Codex 프롬프트 문서 관리 조사](plugins/codex-workflow/references/prompt-document-management.md)에 있습니다.
 
 ## 저장소 구조
 
@@ -134,8 +150,25 @@ Codex는 승인된 PRD, 감사가 통과된 기술 스펙과 감사 보고서를
 plugins/codex-workflow/.codex-plugin/plugin.json
 plugins/codex-workflow/skills/
 plugins/codex-workflow/references/
+cmd/codex-workflow/
+internal/promptdoc/
+internal/review/
+scripts/install.sh
+scripts/install.ps1
+.github/workflows/release-binaries.yml
 ```
+
+## 로컬 개발
+
+```powershell
+go test ./...
+go build -o dist\codex-workflow.exe .\cmd\codex-workflow
+```
+
+Git tag `v*`를 push하면 GitHub Actions가 6개 OS·아키텍처 바이너리를 교차 컴파일하고 Linux x64 smoke test, SHA-256 생성과 GitHub Release 업로드를 수행합니다. 릴리스에는 `LICENSE`와 `THIRD_PARTY_NOTICES.md`도 포함됩니다. 릴리스는 자산 업로드가 끝날 때까지 초안으로 유지되며 같은 tag의 작업을 다시 실행해도 자산을 교체할 수 있습니다.
 
 ## 라이선스
 
 [Apache License 2.0](LICENSE)
+
+Plannotator를 포함한 참고 프로젝트의 저작권과 라이선스는 [서드파티 고지](THIRD_PARTY_NOTICES.md)에서 확인할 수 있습니다.

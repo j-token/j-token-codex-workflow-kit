@@ -1,7 +1,7 @@
 {
   "name": "codex-workflow",
-  "version": "0.11.1",
-  "description": "요구사항 정리, 디버깅, Figma/UI 작업, PRD와 기술 스펙, 무컨텍스트 에이전트 독립 감사, 승인 후 별도 작업 구현과 구현 전후 독립 리뷰를 위한 한국어 워크플로우 스킬 모음입니다.",
+  "version": "1.0.0",
+  "description": "최소한의 사용자 의도에서 사실과 조건을 조사하고, 복잡한 작업의 계획·모델·추론 강도·Codex 프롬프트를 OS별 바이너리의 브라우저 화면에서 검토하는 한국어 워크플로우입니다.",
   "author": {
     "name": "j-token",
     "email": "j-token@example.com",
@@ -10,24 +10,22 @@
   "homepage": "https://github.com/j-token/j-token-workflow-kit",
   "repository": "https://github.com/j-token/j-token-workflow-kit",
   "license": "Apache-2.0",
-  "keywords": ["workflow", "spec", "prd", "technical-spec", "spec-audit", "debugging", "figma", "model-selection", "implementation-thread", "codex", "subagents", "orchestration"],
+  "keywords": ["workflow", "prompt", "browser-review", "binary", "spec", "prd", "debugging", "figma", "model-selection", "reasoning-effort", "implementation-thread", "codex", "orchestration"],
   "skills": "./skills/",
   "interface": {
     "displayName": "Codex 한국어 워크플로우",
-    "shortDescription": "무컨텍스트 에이전트로 스펙과 구현 결과를 독립 리뷰합니다.",
-    "longDescription": "Codex 한국어 워크플로우는 요구사항 발견, 버그 리포트 기반 디버깅, Figma와 스크린샷 기반 UI 작업, PRD와 기술 스펙 작성을 위한 로컬 스킬 모음입니다. 작성된 기술 스펙은 대화 컨텍스트가 없는 하위 에이전트가 실제 저장소와 공식 자료에 대조해 구현 가능성, 블로커와 사실 불일치를 감사합니다. 감사가 통과되고 승인된 구현은 적절한 모델과 추론 강도를 선택해 별도 Codex 작업에서 시작하며, 구현 직전 문서 논리 검토와 구현 직후 코드 리뷰도 서로 다른 무컨텍스트 에이전트가 수행합니다. Git, PR, 커밋과 기술 글쓰기를 위한 안전 규칙도 포함합니다.",
+    "shortDescription": "최소 의도를 조사해 실행 가능한 Codex 프롬프트로 만듭니다.",
+    "longDescription": "Codex 한국어 워크플로우는 최소한의 사용자 의도를 저장소와 공식 자료에서 조사하고, 사실·조건·결정·계획·검증·모델·추론 강도·실행 프롬프트를 하나의 프롬프트 문서로 만듭니다. Windows, macOS와 Linux용 codex-workflow 바이너리는 이 문서를 로컬 브라우저에서 열어 모델·추론 강도·프롬프트를 수정하고 승인하게 합니다. 간단하고 저위험인 수정은 문서 승인 없이 현재 작업에서 처리하며, 새 작업 도구가 없으면 동일한 설정과 완전한 프롬프트를 출력합니다.",
     "developerName": "j-token",
     "category": "Productivity",
     "capabilities": ["Interactive", "Write", "Code"],
     "defaultPrompt": [
-      "이 요구사항을 명확히 정리하고 PRD를 작성해줘.",
-      "이 아이디어를 PRD로 작성해줘.",
-      "승인된 PRD를 읽고 기술 스펙을 작성해줘.",
-      "기술 스펙을 대화 컨텍스트가 없는 에이전트로 독립 감사하고 구현 블로커와 사실 불일치를 조사해줘.",
-      "먼저 버그 리포트를 작성해줘.",
-      "이 UI 자료를 읽고 화면 흐름을 정리해줘.",
-      "기술 스펙을 검토한 뒤 별도 메시지에서 구현을 승인할게.",
-      "$orchestrate-subagents를 사용해 필요한 하위 에이전트 작업만 위임하고 결과를 통합해줘."
+      "$setup-codex-prompt를 사용해 이 아이디어를 조사하고 새 Codex 작업용 프롬프트를 만들어줘.",
+      "이 간단한 수정을 바로 구현하고 검증해줘.",
+      "이 버그의 사실과 원인을 조사하고 위험이 낮으면 바로 고쳐줘.",
+      "이 UI 자료를 읽고 화면 흐름과 필요한 에셋을 조사해줘.",
+      "모델과 추론 강도를 바꾸고 이 계획으로 새 Codex 작업을 시작해줘.",
+      "이 고위험 프롬프트 문서의 핵심 계약을 독립 감사해줘."
     ],
     "brandColor": "#2563EB"
   }

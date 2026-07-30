@@ -1,4 +1,4 @@
 interface:
-  display_name: "기술 스펙 독립 감사"
-  short_description: "핵심 계약의 블로커를 찾고 구현 세부사항을 분리합니다."
-  default_prompt: "$audit-technical-spec을 사용해 이 기술 스펙의 핵심 계약과 블로커를 독립 감사하고 비차단 세부사항은 구현 단계로 이관해줘."
+  display_name: "실행 문서 독립 감사"
+  short_description: "고위험 프롬프트 문서과 기술 계약의 블로커를 독립 검증합니다."
+  default_prompt: "$audit-technical-spec을 사용해 이 고위험 프롬프트 문서의 사실과 핵심 계약을 저장소에 대조해 독립 감사해줘."
