@@ -1,7 +1,7 @@
 {
   "name": "codex-workflow",
   "version": "1.0.0",
-  "description": "최소한의 사용자 의도에서 사실과 조건을 조사하고, 복잡한 작업의 계획·모델·추론 강도·Codex 프롬프트를 OS별 바이너리의 브라우저 화면에서 검토하는 한국어 워크플로우입니다.",
+  "description": "사용자 의도를 먼저 판별하고 사실과 조건을 조사해, 계획·모델·추론 강도·Codex 프롬프트를 OS별 바이너리의 브라우저 화면에서 검토하는 한국어 워크플로우입니다.",
   "author": {
     "name": "j-token",
     "email": "j-token@example.com",
@@ -10,22 +10,25 @@
   "homepage": "https://github.com/j-token/j-token-workflow-kit",
   "repository": "https://github.com/j-token/j-token-workflow-kit",
   "license": "Apache-2.0",
-  "keywords": ["workflow", "prompt", "browser-review", "binary", "spec", "prd", "debugging", "figma", "model-selection", "reasoning-effort", "implementation-thread", "codex", "orchestration"],
+  "keywords": ["workflow", "intent", "explanation", "prompt", "browser-review", "binary", "spec", "prd", "technical-spec", "spec-audit", "debugging", "figma", "model-selection", "reasoning-effort", "implementation-thread", "codex", "subagents", "orchestration"],
   "skills": "./skills/",
   "interface": {
     "displayName": "Codex 한국어 워크플로우",
     "shortDescription": "최소 의도를 조사해 실행 가능한 Codex 프롬프트로 만듭니다.",
-    "longDescription": "Codex 한국어 워크플로우는 최소한의 사용자 의도를 저장소와 공식 자료에서 조사하고, 사실·조건·결정·계획·검증·모델·추론 강도·실행 프롬프트를 하나의 프롬프트 문서로 만듭니다. Windows, macOS와 Linux용 codex-workflow 바이너리는 이 문서를 로컬 브라우저에서 열어 모델·추론 강도·프롬프트를 수정하고 승인하게 합니다. 간단하고 저위험인 수정은 문서 승인 없이 현재 작업에서 처리하며, 새 작업 도구가 없으면 동일한 설정과 완전한 프롬프트를 출력합니다.",
+    "longDescription": "Codex 한국어 워크플로우는 모든 사용자 명령에서 의도를 먼저 판별하고 최소한의 사용자 의도를 저장소와 공식 자료에서 조사해, 사실·조건·결정·계획·검증·모델·추론 강도·실행 프롬프트를 하나의 프롬프트 문서로 만듭니다. Windows, macOS와 Linux용 codex-workflow 바이너리는 이 문서를 로컬 브라우저에서 열어 모델·추론 강도·프롬프트를 수정하고 승인하게 합니다. 간단하고 저위험인 수정은 문서 승인 없이 현재 작업에서 처리하며, 새 작업 도구가 없으면 동일한 설정과 완전한 프롬프트를 출력합니다. 작업 결과와 지식은 j-explain-style의 설명 순서와 실측 중심 방식으로 전달합니다.",
     "developerName": "j-token",
     "category": "Productivity",
     "capabilities": ["Interactive", "Write", "Code"],
     "defaultPrompt": [
+      "$intent-first를 먼저 사용해 이 요청의 의도를 판별해줘.",
       "$setup-codex-prompt를 사용해 이 아이디어를 조사하고 새 Codex 작업용 프롬프트를 만들어줘.",
       "이 간단한 수정을 바로 구현하고 검증해줘.",
       "이 버그의 사실과 원인을 조사하고 위험이 낮으면 바로 고쳐줘.",
       "이 UI 자료를 읽고 화면 흐름과 필요한 에셋을 조사해줘.",
       "모델과 추론 강도를 바꾸고 이 계획으로 새 Codex 작업을 시작해줘.",
-      "이 고위험 프롬프트 문서의 핵심 계약을 독립 감사해줘."
+      "이 고위험 프롬프트 문서의 핵심 계약을 독립 감사해줘.",
+      "$orchestrate-subagents를 사용해 필요한 하위 에이전트 작업만 위임하고 결과를 통합해줘.",
+      "$j-explain-style을 사용해 작업 결과와 판단 근거를 설명해줘."
     ],
     "brandColor": "#2563EB"
   }
