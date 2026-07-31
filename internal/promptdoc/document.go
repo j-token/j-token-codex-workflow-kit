@@ -14,11 +14,16 @@ const (
 )
 
 type Document struct {
-	Path            string `json:"path"`
-	Raw             string `json:"raw"`
-	Model           string `json:"model"`
-	ReasoningEffort string `json:"reasoningEffort"`
-	Prompt          string `json:"prompt"`
+	Path            string     `json:"path"`
+	Raw             string     `json:"raw"`
+	Model           string     `json:"model"`
+	ModelReason     string     `json:"modelReason"`
+	ReasoningEffort string     `json:"reasoningEffort"`
+	Prompt          string     `json:"prompt"`
+	Title           string     `json:"title"`
+	ReviewHTML      string     `json:"reviewHtml"`
+	Facts           []Fact     `json:"facts"`
+	Questions       []Question `json:"questions"`
 }
 
 func Load(path string) (Document, error) {
@@ -58,6 +63,8 @@ func Parse(content string) (Document, error) {
 		switch strings.TrimSpace(key) {
 		case "model":
 			doc.Model = trimYAMLScalar(value)
+		case "model_reason":
+			doc.ModelReason = trimYAMLScalar(value)
 		case "reasoning_effort":
 			doc.ReasoningEffort = trimYAMLScalar(value)
 		}
@@ -111,6 +118,9 @@ func Parse(content string) (Document, error) {
 	}
 	if strings.TrimSpace(doc.Prompt) == "" {
 		return Document{}, errors.New("Codex 실행 프롬프트가 비어 있습니다")
+	}
+	if err := hydrateReview(&doc, lines, frontmatterEnd); err != nil {
+		return Document{}, err
 	}
 
 	return doc, nil

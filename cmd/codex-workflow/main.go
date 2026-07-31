@@ -49,11 +49,15 @@ func runReview(args []string) error {
 	flags.SetOutput(os.Stderr)
 	jsonOutput := flags.Bool("json", false, "승인 결과를 JSON으로 출력")
 	noOpen := flags.Bool("no-open", false, "브라우저를 자동으로 열지 않음")
+	startAt := flags.String("start-at", "facts", "검토 시작 단계: facts, choices, plan")
 	if err := flags.Parse(normalizeReviewArgs(args)); err != nil {
 		return err
 	}
 	if flags.NArg() != 1 {
-		return errors.New("사용법: codex-workflow review <prompt.md> [--json] [--no-open]")
+		return errors.New("사용법: codex-workflow review <prompt.md> [--json] [--no-open] [--start-at=facts|choices|plan]")
+	}
+	if *startAt != "facts" && *startAt != "choices" && *startAt != "plan" {
+		return fmt.Errorf("지원하지 않는 시작 단계 `%s`입니다: facts, choices, plan 중 하나를 사용하세요", *startAt)
 	}
 
 	path, err := filepath.Abs(flags.Arg(0))
@@ -67,7 +71,7 @@ func runReview(args []string) error {
 
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
-	result, err := review.Run(ctx, document, review.Options{OpenBrowser: !*noOpen, Writer: os.Stderr})
+	result, err := review.Run(ctx, document, review.Options{OpenBrowser: !*noOpen, Writer: os.Stderr, StartAt: *startAt})
 	if err != nil {
 		return err
 	}
@@ -79,6 +83,8 @@ func runReview(args []string) error {
 	}
 	if result.Status == "approved" {
 		fmt.Printf("승인됨: model=%s reasoning_effort=%s\n", result.Model, result.ReasoningEffort)
+	} else if result.Status == "feedback" {
+		fmt.Printf("피드백 요청됨: comments=%d\n", len(result.Comments))
 	} else {
 		fmt.Println("취소됨")
 	}
@@ -88,9 +94,14 @@ func runReview(args []string) error {
 func normalizeReviewArgs(args []string) []string {
 	flags := make([]string, 0, len(args))
 	positional := make([]string, 0, 1)
-	for _, argument := range args {
+	for index := 0; index < len(args); index++ {
+		argument := args[index]
 		if len(argument) > 0 && argument[0] == '-' {
 			flags = append(flags, argument)
+			if argument == "--start-at" && index+1 < len(args) {
+				index++
+				flags = append(flags, args[index])
+			}
 			continue
 		}
 		positional = append(positional, argument)
@@ -104,7 +115,7 @@ func printHelp() {
 Codex 실행 프롬프트를 브라우저에서 검토합니다.
 
 사용법:
-  codex-workflow review <prompt.md> [--json] [--no-open]
+  codex-workflow review <prompt.md> [--json] [--no-open] [--start-at=facts|choices|plan]
   codex-workflow version
 
 명령:
