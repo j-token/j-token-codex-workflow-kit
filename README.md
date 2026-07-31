@@ -2,9 +2,17 @@
 
 `j-token-workflow-kit`은 사용자가 최소한의 의도만 전달해도 Codex가 저장소와 필요한 외부 자료를 조사하고, 실행 계획과 새 작업용 프롬프트까지 준비하는 한국어 워크플로우 플러그인입니다.
 
-현재 플러그인 버전: `1.1.0`
+현재 플러그인 버전: `1.1.1`
 
 다이어그램은 실행 환경에 맞게 출력합니다. Codex Desktop에서는 Mermaid를 사용하고, Codex CLI에서는 Mermaid를 `text` 코드 블록 안의 ASCII 다이어그램으로 대체합니다.
+
+## 1.1.1에서 달라진 점
+
+1.1.1은 바이너리가 아직 설치되지 않았거나 GitHub Release가 게시되지 않은 경우의 설치·검토 흐름을 보완합니다.
+
+- `setup-codex-prompt`가 `codex-workflow` 명령을 실행하기 전에 설치 여부를 확인하고 운영체제별 설치 방법을 안내합니다.
+- 설치 스크립트가 없는 릴리스 파일을 요청하면 GitHub HTML 대신 확인할 릴리스와 운영체제·아키텍처를 짧게 알립니다.
+- GitHub Actions 수동 실행에서 `release_tag`를 입력하면 선택한 ref로 태그와 Release를 만들고 바이너리를 게시합니다.
 
 ## 1.1.0에서 달라진 점
 
@@ -95,17 +103,19 @@ Windows PowerShell:
 irm https://raw.githubusercontent.com/j-token/j-token-codex-workflow-kit/main/scripts/install.ps1 | iex
 ```
 
+`setup-codex-prompt`는 검토를 시작하기 전에 `codex-workflow`가 현재 셸에서 발견되는지 확인합니다. 설치되지 않았으면 운영체제에 맞는 위 명령을 안내하며, 설치를 건너뛰거나 실패해도 채팅 검토 방식으로 계속할 수 있습니다. 설치 스크립트가 릴리스 파일을 찾지 못하면 공개된 GitHub Release와 해당 운영체제·아키텍처용 바이너리를 확인하라는 오류를 출력합니다.
+
 특정 버전 설치:
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/j-token/j-token-codex-workflow-kit/v1.1.0/scripts/install.sh | sh -s -- --version 1.1.0
+curl -fsSL https://raw.githubusercontent.com/j-token/j-token-codex-workflow-kit/v1.1.1/scripts/install.sh | sh -s -- --version 1.1.1
 ```
 
 ```powershell
-& ([scriptblock]::Create((irm https://raw.githubusercontent.com/j-token/j-token-codex-workflow-kit/v1.1.0/scripts/install.ps1))) -Version 1.1.0
+& ([scriptblock]::Create((irm https://raw.githubusercontent.com/j-token/j-token-codex-workflow-kit/v1.1.1/scripts/install.ps1))) -Version 1.1.1
 ```
 
-위 설치 URL은 `v1.1.0` tag와 GitHub Release가 게시된 뒤부터 사용할 수 있습니다. 설치 스크립트와 바이너리 버전을 함께 고정하므로 이후 `main`의 변경에 영향을 받지 않습니다.
+위 설치 URL은 `v1.1.1` tag와 GitHub Release가 게시된 뒤부터 사용할 수 있습니다. 설치 스크립트와 바이너리 버전을 함께 고정하므로 이후 `main`의 변경에 영향을 받지 않습니다.
 
 프롬프트 검토:
 
@@ -189,7 +199,7 @@ go test ./...
 go build -o dist\codex-workflow.exe .\cmd\codex-workflow
 ```
 
-Git tag `v*`를 push하면 GitHub Actions가 6개 OS·아키텍처 바이너리를 교차 컴파일하고 Linux x64 smoke test, SHA-256 생성과 GitHub Release 업로드를 수행합니다. 릴리스에는 `LICENSE`와 `THIRD_PARTY_NOTICES.md`도 포함됩니다. 릴리스는 자산 업로드가 끝날 때까지 초안으로 유지되며 같은 tag의 작업을 다시 실행해도 자산을 교체할 수 있습니다.
+Git tag `v*`를 push하면 GitHub Actions가 6개 OS·아키텍처 바이너리를 교차 컴파일하고 Linux x64 smoke test, SHA-256 생성과 GitHub Release 업로드를 수행합니다. 수동 실행에서는 `release_tag`에 `v1.1.1`처럼 `v`로 시작하는 값을 넣어야 선택한 ref를 태그하고 릴리스를 게시하며, 비워 두면 검증용 빌드 artifact만 만듭니다. 릴리스에는 `LICENSE`와 `THIRD_PARTY_NOTICES.md`도 포함됩니다. 릴리스는 자산 업로드가 끝날 때까지 초안으로 유지되며 같은 tag의 작업을 다시 실행해도 자산을 교체할 수 있습니다.
 
 ## 라이선스
 

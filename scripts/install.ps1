@@ -6,6 +6,28 @@ param(
 $ErrorActionPreference = "Stop"
 $repository = "j-token/j-token-codex-workflow-kit"
 
+function Get-ReleaseAsset {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Uri,
+        [Parameter(Mandatory = $true)]
+        [string]$OutFile
+    )
+
+    try {
+        Invoke-WebRequest -UseBasicParsing -Uri $Uri -OutFile $OutFile
+    } catch {
+        $statusCode = $null
+        if ($null -ne $_.Exception.Response) {
+            $statusCode = [int]$_.Exception.Response.StatusCode
+        }
+        if ($statusCode -eq 404) {
+            throw "릴리스 파일을 찾을 수 없습니다: $Uri`n공개된 GitHub Release와 현재 운영체제·아키텍처용 바이너리가 있는지 확인하세요."
+        }
+        throw "릴리스 파일 다운로드에 실패했습니다: $Uri`n$($_.Exception.Message)"
+    }
+}
+
 if ([string]::IsNullOrWhiteSpace($InstallDir)) {
     $InstallDir = Join-Path $env:LOCALAPPDATA "codex-workflow\bin"
 }
@@ -35,8 +57,8 @@ $backupPath = $null
 try {
     $binaryPath = Join-Path $tempDir $asset
     $checksumPath = "$binaryPath.sha256"
-    Invoke-WebRequest -UseBasicParsing -Uri "$baseUrl/$asset" -OutFile $binaryPath
-    Invoke-WebRequest -UseBasicParsing -Uri "$baseUrl/$asset.sha256" -OutFile $checksumPath
+    Get-ReleaseAsset -Uri "$baseUrl/$asset" -OutFile $binaryPath
+    Get-ReleaseAsset -Uri "$baseUrl/$asset.sha256" -OutFile $checksumPath
 
     $expected = ((Get-Content -Raw -Encoding utf8 -LiteralPath $checksumPath).Trim() -split "\s+")[0].ToLowerInvariant()
     $actual = (Get-FileHash -Algorithm SHA256 -LiteralPath $binaryPath).Hash.ToLowerInvariant()

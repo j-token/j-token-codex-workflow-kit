@@ -181,7 +181,25 @@ frontmatter의 허용 값은 다음과 같습니다.
 
 ## 승인과 실행
 
-프롬프트 문서를 완성하면 다음 명령을 foreground로 실행하고 사용자가 브라우저 검토를 끝낼 때까지 기다립니다.
+프롬프트 문서를 완성하면 먼저 현재 셸에서 `codex-workflow` 명령을 찾을 수 있는지 확인합니다. Windows PowerShell에서는 `Get-Command codex-workflow -ErrorAction SilentlyContinue`, macOS와 Linux에서는 `command -v codex-workflow`를 사용합니다.
+
+명령을 찾지 못하면 설치를 자동 실행하지 말고 브라우저 검토 도구가 아직 설치되지 않았다고 짧게 알린 뒤, 사용자의 운영체제에 맞는 설치 명령을 한 번만 안내합니다.
+
+macOS와 Linux:
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/j-token/j-token-codex-workflow-kit/main/scripts/install.sh | sh
+```
+
+Windows PowerShell:
+
+```powershell
+irm https://raw.githubusercontent.com/j-token/j-token-codex-workflow-kit/main/scripts/install.ps1 | iex
+```
+
+사용자가 설치를 마치면 명령 존재 여부를 다시 확인합니다. 설치하지 않기로 하거나 설치가 실패하면 작업을 차단하지 않고 채팅에서 같은 세 항목을 검토하는 fallback을 사용합니다.
+
+명령을 찾으면 다음 명령을 foreground로 실행하고 사용자가 브라우저 검토를 끝낼 때까지 기다립니다.
 
 ```text
 codex-workflow review .codex/prompts/active/<slug>.md --json
@@ -216,22 +234,6 @@ codex-workflow review .codex/prompts/active/<slug>.md --json
 ```
 
 `status`는 `approved`, `feedback`, `cancelled` 중 하나입니다. `feedback`에서는 `comments`가 한 개 이상이며 `restartOptions`가 재시작 가능한 세 단계를 명시합니다. 각 코멘트는 `kind`, `section`, `quote`, `comment`를 포함합니다. `kind`는 본문 드래그 코멘트의 `inline` 또는 계획 전체 코멘트의 `global`입니다.
-
-`codex-workflow` 명령을 찾을 수 없으면 설치를 자동 실행하지 말고 사용자의 운영체제에 맞는 명령을 안내합니다.
-
-macOS와 Linux:
-
-```sh
-curl -fsSL https://raw.githubusercontent.com/j-token/j-token-codex-workflow-kit/main/scripts/install.sh | sh
-```
-
-Windows PowerShell:
-
-```powershell
-irm https://raw.githubusercontent.com/j-token/j-token-codex-workflow-kit/main/scripts/install.ps1 | iex
-```
-
-사용자가 설치하지 않기로 하거나 설치가 실패하면 작업을 차단하지 않고 채팅에서 같은 세 항목을 검토하는 fallback을 사용합니다.
 
 사용자가 한 번에 검토할 항목은 다음 세 가지입니다.
 

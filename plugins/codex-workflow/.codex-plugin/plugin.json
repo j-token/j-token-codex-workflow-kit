@@ -1,6 +1,6 @@
 {
   "name": "codex-workflow",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "사용자 의도를 먼저 판별하고 사실과 조건을 조사해, 계획·모델·추론 강도·Codex 프롬프트를 OS별 바이너리의 브라우저 화면에서 검토하는 한국어 워크플로우입니다.",
   "author": {
     "name": "j-token",
