@@ -1,7 +1,7 @@
 interface:
   display_name: "하위 에이전트 오케스트레이션"
-  short_description: "필요한 작업만 적절한 GPT-5.6 에이전트에 배정합니다."
-  default_prompt: "$orchestrate-subagents를 사용해 필요한 경우에만 최소한의 하위 에이전트를 역할에 맞는 모델로 배정하고 결과를 통합해줘."
+  short_description: "독립 이점이 있는 작업만 하위 에이전트에 배정합니다."
+  default_prompt: "$orchestrate-subagents를 사용해 독립적으로 병렬화할 가치가 있는 작업만 하위 에이전트에 배정해줘."
 
 policy:
   allow_implicit_invocation: true

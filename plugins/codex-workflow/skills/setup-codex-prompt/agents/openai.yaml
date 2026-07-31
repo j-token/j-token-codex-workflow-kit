@@ -1,0 +1,4 @@
+interface:
+  display_name: "Codex 실행 프롬프트 준비"
+  short_description: "조사부터 새 작업용 프롬프트까지 한 문서로 정리"
+  default_prompt: "$setup-codex-prompt를 사용해 이 아이디어를 조사하고 실행 가능한 Codex 프롬프트를 만들어줘."

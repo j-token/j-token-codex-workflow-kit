@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Codex 실행 프롬프트 검토</title>
+  <style>
+    :root { color-scheme: light dark; font-family: Inter, Pretendard, system-ui, sans-serif; }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #0b1020; color: #e8ecf4; }
+    main { width: min(1180px, calc(100% - 32px)); margin: 32px auto 72px; }
+    header { margin-bottom: 24px; }
+    h1 { margin: 0 0 8px; font-size: clamp(26px, 4vw, 42px); }
+    .subtle { color: #9da9bf; }
+    .grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(320px, 0.7fr); gap: 18px; }
+    .card { background: #151c2f; border: 1px solid #2a3550; border-radius: 14px; padding: 20px; box-shadow: 0 18px 60px #0004; }
+    label { display: block; margin: 0 0 8px; font-weight: 700; }
+    input, select, textarea { width: 100%; border: 1px solid #3a4868; border-radius: 9px; background: #0f1628; color: #f4f6fb; padding: 12px; font: inherit; }
+    textarea { min-height: 420px; resize: vertical; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; line-height: 1.55; }
+    pre { margin: 0; max-height: 640px; overflow: auto; white-space: pre-wrap; word-break: break-word; font: 13px/1.55 ui-monospace, SFMono-Regular, Consolas, monospace; }
+    .field { margin-bottom: 16px; }
+    .actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 18px; }
+    button { border: 0; border-radius: 9px; padding: 11px 18px; font: inherit; font-weight: 800; cursor: pointer; }
+    #approve { background: #4f7cff; color: white; }
+    #cancel { background: #2a3550; color: #d6deef; }
+    #message { min-height: 24px; margin-top: 12px; color: #ffbe6b; }
+    @media (max-width: 860px) { .grid { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <h1>Codex 실행 프롬프트 검토</h1>
+      <div id="path" class="subtle">문서를 불러오는 중…</div>
+    </header>
+    <div class="grid">
+      <section class="card">
+        <h2>조사·계획 문서</h2>
+        <pre id="document"></pre>
+      </section>
+      <section class="card">
+        <div class="field">
+          <label for="model">모델</label>
+          <input id="model" autocomplete="off">
+        </div>
+        <div class="field">
+          <label for="effort">추론 강도</label>
+          <select id="effort">
+            <option>none</option>
+            <option>minimal</option>
+            <option>low</option>
+            <option>medium</option>
+            <option>high</option>
+            <option>xhigh</option>
+            <option>max</option>
+            <option>ultra</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="prompt">새 Codex 작업용 프롬프트</label>
+          <textarea id="prompt" spellcheck="false"></textarea>
+        </div>
+        <div class="actions">
+          <button id="cancel" type="button">취소</button>
+          <button id="approve" type="button">승인</button>
+        </div>
+        <div id="message" role="status"></div>
+      </section>
+    </div>
+  </main>
+  <script>
+    const byId = (id) => document.getElementById(id);
+    async function load() {
+      const response = await fetch('./api/document');
+      if (!response.ok) throw new Error('프롬프트 문서를 불러오지 못했습니다.');
+      const data = await response.json();
+      byId('path').textContent = data.path;
+      byId('document').textContent = data.raw;
+      byId('model').value = data.model;
+      if (![...byId('effort').options].some((option) => option.value === data.reasoningEffort)) {
+        byId('effort').add(new Option(data.reasoningEffort, data.reasoningEffort));
+      }
+      byId('effort').value = data.reasoningEffort;
+      byId('prompt').value = data.prompt;
+    }
+    async function submit(action) {
+      byId('message').textContent = '처리 중…';
+      byId('approve').disabled = true;
+      byId('cancel').disabled = true;
+      const response = await fetch('./api/submit', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+          action,
+          model: byId('model').value,
+          reasoningEffort: byId('effort').value,
+          prompt: byId('prompt').value
+        })
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        byId('message').textContent = data.error || '처리하지 못했습니다.';
+        if (response.status !== 409) {
+          byId('approve').disabled = false;
+          byId('cancel').disabled = false;
+        }
+        return;
+      }
+      byId('message').textContent = action === 'approve'
+        ? '승인했습니다. 이 창을 닫아도 됩니다.'
+        : '검토를 취소했습니다. 이 창을 닫아도 됩니다.';
+    }
+    byId('approve').addEventListener('click', () => submit('approve'));
+    byId('cancel').addEventListener('click', () => submit('cancel'));
+    load().catch((error) => { byId('message').textContent = error.message; });
+  </script>
+</body>
+</html>
