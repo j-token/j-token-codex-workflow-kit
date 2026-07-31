@@ -48,8 +48,18 @@ temp_dir="$(mktemp -d)"
 staged_path=""
 trap 'rm -rf "$temp_dir"; [ -z "$staged_path" ] || rm -f "$staged_path"' EXIT INT TERM
 
-curl -fsSL "${base_url}/${asset}" -o "${temp_dir}/${asset}"
-curl -fsSL "${base_url}/${asset}.sha256" -o "${temp_dir}/${asset}.sha256"
+download_asset() {
+  asset_url="$1"
+  output_path="$2"
+  if ! curl -fsSL "$asset_url" -o "$output_path"; then
+    echo "릴리스 파일 다운로드에 실패했습니다: ${asset_url}" >&2
+    echo "공개된 GitHub Release와 현재 운영체제·아키텍처용 바이너리가 있는지 확인하세요." >&2
+    exit 1
+  fi
+}
+
+download_asset "${base_url}/${asset}" "${temp_dir}/${asset}"
+download_asset "${base_url}/${asset}.sha256" "${temp_dir}/${asset}.sha256"
 
 expected="$(awk '{print $1}' "${temp_dir}/${asset}.sha256")"
 if command -v sha256sum >/dev/null 2>&1; then
