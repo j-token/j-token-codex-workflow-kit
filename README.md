@@ -2,28 +2,20 @@
 
 `j-token-workflow-kit`은 사용자가 최소한의 의도만 전달해도 Codex가 저장소와 필요한 외부 자료를 조사하고, 실행 계획과 새 작업용 프롬프트까지 준비하는 한국어 워크플로우 플러그인입니다.
 
-현재 플러그인 버전: `1.1.1`
+현재 플러그인 버전: `1.2.0`
 
 다이어그램은 실행 환경에 맞게 출력합니다. Codex Desktop에서는 Mermaid를 사용하고, Codex CLI에서는 Mermaid를 `text` 코드 블록 안의 ASCII 다이어그램으로 대체합니다.
 
-## 1.1.1에서 달라진 점
+## 1.2.0에서 달라진 점
 
-1.1.1은 바이너리가 아직 설치되지 않았거나 GitHub Release가 게시되지 않은 경우의 설치·검토 흐름을 보완합니다.
+1.2.0은 `사실관계 → 옵션 선택 → 계획서` 세 단계는 유지하면서 검토 수단을 ChatGPT 앱과 CLI의 Markdown 편집으로 단순화합니다.
 
-- `setup-codex-prompt`가 `codex-workflow` 명령을 실행하기 전에 설치 여부를 확인하고 운영체제별 설치 방법을 안내합니다.
-- 설치 스크립트가 없는 릴리스 파일을 요청하면 GitHub HTML 대신 확인할 릴리스와 운영체제·아키텍처를 짧게 알립니다.
-- GitHub Actions 수동 실행에서 `release_tag`를 입력하면 선택한 ref로 태그와 Release를 만들고 바이너리를 게시합니다.
-
-## 1.1.0에서 달라진 점
-
-1.1.0은 1.0.0의 작업 분류를 유지하면서 로컬 브라우저 검토를 사실 관계, 옵션 선택, 계획 검토의 세 단계로 확장합니다.
-
-- GFM Markdown, Mermaid, KaTeX 수식과 다크·라이트 테마를 로컬 자산으로 렌더링합니다.
-- 사실 수정, 단일·다중 옵션, 직접 입력, 본문·블록·전역 코멘트와 피드백 재시작 흐름을 제공합니다.
-- `gpt-5.6` 모델을 모달에서 선택하고 LLM의 모델 선택 이유를 읽기 전용으로 확인합니다.
+- ChatGPT 앱에서는 응답의 사실·옵션·계획을 드래그해 선택하고, 선택한 문장을 기준으로 사실 추가·수정 또는 코멘트를 보낼 수 있습니다.
+- Codex CLI에서는 `.codex/temp/<slug>-review.md`를 임시 검토 문서로 만들어 사용자가 직접 사실·옵션·계획과 코멘트를 편집하도록 권장합니다.
+- 검토 결과는 기존 프롬프트 문서의 `[사용자 검토 결과]`와 실행 계획에 반영합니다.
 
 - 빠른 작업: 문서를 만들지 않고 사용자의 현재 실행 요청에 따라 같은 작업에서 구현·검증합니다.
-- 계획 작업: `.codex/prompts/active/<slug>.md` 한 파일에 사실, 조건, 결정, 계획, 검증, 모델, 추론 강도와 실행 프롬프트를 모읍니다.
+- 계획 작업: `.codex/prompts/active/<slug>.md` 한 파일에 사실, 조건, 결정, 계획, 검증, 모델, 추론 강도와 실행 프롬프트를 모읍니다. 스킬의 행동·라우팅·출력 계약을 바꾸는 수정은 변경량이 작아도 계획 작업으로 승격합니다.
 - 민감 작업: 프롬프트 문서는 하나로 유지하고 삭제, 배포, 외부 전송, 권한 변경과 비가역 데이터 변경 직전에만 별도 승인을 받습니다.
 - PRD, 기술 스펙과 독립 감사는 사용자가 명시적으로 요구하거나 외부 형식·고위험 계약에 실제로 필요할 때만 추가합니다.
 
@@ -39,7 +31,11 @@ flowchart LR
     C -- "빠른 작업" --> D["현재 작업에서 구현·검증"]
     C -- "계획·민감 작업" --> E["단일 프롬프트 문서"]
     E --> F["계획·모델·추론·프롬프트 검토"]
-    F --> G["새 Codex 작업 생성"]
+    F --> R{"검토 채널"}
+    R -- "ChatGPT 앱" --> A2["드래그 선택·사실 추가·코멘트"]
+    R -- "Codex CLI" --> C2[".codex/temp/<slug>-review.md 편집"]
+    A2 --> G["새 Codex 작업 생성"]
+    C2 --> G
     G --> H["구현·검증·보고"]
     H --> I["프롬프트 문서 보관"]
     I --> J["j-explain-style로 결과 설명"]
@@ -70,66 +66,43 @@ flowchart LR
 
 모델과 추론 강도는 사용자가 새 작업을 승인하기 전에 수정할 수 있습니다. 승인 후 Codex 앱의 새 작업 도구가 있으면 해당 설정으로 작업을 만들고, 없거나 실패하면 동일한 모델·추론 강도·프롬프트를 코드 블록으로 출력합니다.
 
-## OS별 바이너리
+## 검토 채널
 
-`codex-workflow` 바이너리는 프롬프트 문서를 로컬 브라우저에서 열고 세 단계로 검토합니다.
+검토 순서는 채널과 관계없이 다음 세 단계입니다.
 
-1. **사실 관계**: AI가 확인한 팩트와 근거를 읽고, 틀린 내용을 한 번에 수정하거나 원문으로 되돌립니다.
-2. **옵션 선택**: 질문별로 단일 또는 다중 옵션을 선택하고 직접 입력이나 선택별 의견을 덧붙입니다.
-3. **계획 검토**: GFM Markdown, 상호작용 Mermaid와 KaTeX LaTeX 수식으로 렌더링한 계획에서 본문 드래그, 표·Mermaid 블록 전체 또는 상단 버튼으로 코멘트를 남깁니다. 다크·라이트 테마를 전환하고 모달에서 `gpt-5.6` 모델을 선택하며 LLM의 모델 선택 이유를 읽기 전용으로 확인할 수 있습니다.
+1. **사실관계**: 확인된 사실·근거를 읽고, 틀린 사실을 수정하거나 새 사실과 근거를 추가합니다.
+2. **옵션**: 질문별 선택과 선택 이유를 확인하고, 옵션이나 조건에 대한 의견을 남깁니다.
+3. **계획서**: 실행 계획을 읽고, 선택한 문장을 코멘트하거나 전체 계획에 의견을 남깁니다.
 
-코멘트가 있으면 승인 버튼이 비활성화되고 `피드백 보내기`가 나타납니다. 피드백은 LLM에 반환되며, LLM이 영향 범위에 따라 `facts`, `choices`, `plan` 중 다시 시작할 단계를 선택합니다. 코멘트가 없을 때만 계획을 승인할 수 있고, 수정한 사실과 선택 결과는 승인된 프롬프트의 `[사용자 검토 결과]`에 자동으로 포함됩니다. 서버는 `127.0.0.1`의 임의 포트에만 바인딩되며 외부 스크립트나 네트워크 UI 자산을 사용하지 않습니다.
+### ChatGPT 앱
 
-| 운영체제 | 아키텍처 | 릴리스 파일 |
-| --- | --- | --- |
-| macOS | Apple Silicon | `codex-workflow-darwin-arm64` |
-| macOS | Intel | `codex-workflow-darwin-x64` |
-| Linux | arm64 | `codex-workflow-linux-arm64` |
-| Linux | x64 | `codex-workflow-linux-x64` |
-| Windows | arm64 | `codex-workflow-windows-arm64.exe` |
-| Windows | x64 | `codex-workflow-windows-x64.exe` |
+사실관계·옵션·계획서의 현재 내용은 각각 별도의 Markdown 코드 블록으로 보여줍니다. 사용자는 코드 블록 안의 문장을 드래그해 선택한 뒤 메시지로 수정·추가·코멘트를 보냅니다. 새 사실은 `내용`과 `근거`를 함께 적고, 코멘트는 선택한 문장과 바꿀 방향을 포함합니다. 코멘트가 있으면 가장 앞의 영향 단계(`사실관계`, `옵션`, `계획서`)부터 다시 제시합니다.
 
-각 릴리스 파일에는 같은 이름의 `.sha256` sidecar가 함께 생성됩니다.
+### Codex CLI
 
-macOS와 Linux:
+검토가 필요한 계획 작업에서는 `.codex/temp/<slug>-review.md`를 만들고, 현재 사실·옵션·계획과 다음 입력 칸을 넣습니다.
 
-```sh
-curl -fsSL https://raw.githubusercontent.com/j-token/j-token-codex-workflow-kit/main/scripts/install.sh | sh
+```md
+## 사실관계 검토
+### 추가·수정할 사실
+- 내용:
+- 근거:
+
+## 옵션 검토
+- Q1:
+- 선택 또는 변경 의견:
+
+## 계획서 검토
+### 코멘트
+- 인용:
+- 의견:
+
+## 검토 결과
+- 시작 단계: facts | choices | plan
+- 상태: feedback | approved
 ```
 
-Windows PowerShell:
-
-```powershell
-irm https://raw.githubusercontent.com/j-token/j-token-codex-workflow-kit/main/scripts/install.ps1 | iex
-```
-
-`setup-codex-prompt`는 검토를 시작하기 전에 `codex-workflow`가 현재 셸에서 발견되는지 확인합니다. 설치되지 않았으면 운영체제에 맞는 위 명령을 안내하며, 설치를 건너뛰거나 실패해도 채팅 검토 방식으로 계속할 수 있습니다. 설치 스크립트가 릴리스 파일을 찾지 못하면 공개된 GitHub Release와 해당 운영체제·아키텍처용 바이너리를 확인하라는 오류를 출력합니다.
-
-특정 버전 설치:
-
-```sh
-curl -fsSL https://raw.githubusercontent.com/j-token/j-token-codex-workflow-kit/v1.1.1/scripts/install.sh | sh -s -- --version 1.1.1
-```
-
-```powershell
-& ([scriptblock]::Create((irm https://raw.githubusercontent.com/j-token/j-token-codex-workflow-kit/v1.1.1/scripts/install.ps1))) -Version 1.1.1
-```
-
-위 설치 URL은 `v1.1.1` tag와 GitHub Release가 게시된 뒤부터 사용할 수 있습니다. 설치 스크립트와 바이너리 버전을 함께 고정하므로 이후 `main`의 변경에 영향을 받지 않습니다.
-
-프롬프트 검토:
-
-```text
-codex-workflow review .codex/prompts/active/<slug>.md --json
-```
-
-피드백을 반영한 뒤 특정 단계에서 다시 검토할 때는 다음처럼 실행합니다.
-
-```text
-codex-workflow review .codex/prompts/active/<slug>.md --start-at=choices --json
-```
-
-결과는 `status`, `path`, `model`, `reasoningEffort`, `prompt`, `facts`, `selections`, `comments`를 가진 JSON으로 stdout에 반환됩니다. `status: feedback`이면 `restartOptions`도 반환되며 LLM이 코멘트를 반영하고 재시작 단계를 선택합니다. 브라우저를 자동으로 열 수 없는 환경에서는 stderr에 표시된 로컬 URL을 직접 열 수 있습니다.
+사용자가 이 임시 Markdown 파일을 편집하면 Codex가 파일을 다시 읽어 권위 문서 `.codex/prompts/active/<slug>.md`에 반영합니다. 임시 파일은 검토가 끝난 뒤 보관할 필요가 없으면 삭제합니다.
 
 ## 사용 예시
 
@@ -160,7 +133,7 @@ $setup-codex-prompt를 사용해 이 아이디어를 저장소와 공식 자료�
 | `setup-codex-prompt` | 최소 의도에서 사실·조건·계획·모델·추론 강도·실행 프롬프트를 단일 프롬프트 문서로 만듭니다. |
 | `requirements-to-spec` | 거친 요구사항을 조사해 Codex 실행 프롬프트로 수렴시키고, 명시적으로 필요한 경우에만 보조 문서를 연결합니다. |
 | `start-implementation-thread` | 승인된 모델·추론 강도·실행 프롬프트로 새 Codex 작업을 만들고 실패 시 같은 내용을 출력합니다. |
-| `bug-report-to-fix` | 간단한 버그는 바로 수정하고 복잡한 버그만 실행 프롬프트 준비 흐름으로 올립니다. |
+| `bug-report-to-fix` | 간단한 버그는 바로 수정하되 스킬 변경이 필요하거나 복잡한 버그는 실행 프롬프트 준비 흐름으로 올립니다. |
 | `figma-flow-to-implementation` | UI 흐름과 에셋을 조사하고 작업 등급에 따라 바로 구현하거나 프롬프트로 계획합니다. |
 | `workflow-composer` | 요구사항, 버그와 UI 작업을 조합하되 산출물을 단일 Codex 실행 프롬프트로 수렴시킵니다. |
 | `prd-writer` | 명시적으로 요청된 장기 제품 범위 문서를 작성합니다. |
@@ -184,22 +157,17 @@ $setup-codex-prompt를 사용해 이 아이디어를 저장소와 공식 자료�
 plugins/codex-workflow/.codex-plugin/plugin.json
 plugins/codex-workflow/skills/
 plugins/codex-workflow/references/
-cmd/codex-workflow/
-internal/promptdoc/
-internal/review/
-scripts/install.sh
-scripts/install.ps1
-.github/workflows/release-binaries.yml
+.codex/temp/<slug>-review.md
 ```
 
 ## 로컬 개발
 
 ```powershell
-go test ./...
-go build -o dist\codex-workflow.exe .\cmd\codex-workflow
+git diff --check
+rg -n "사실관계|옵션|계획서|codex/temp" README.md plugins/codex-workflow workflow-plugin-design.md
 ```
 
-Git tag `v*`를 push하면 GitHub Actions가 6개 OS·아키텍처 바이너리를 교차 컴파일하고 Linux x64 smoke test, SHA-256 생성과 GitHub Release 업로드를 수행합니다. 수동 실행에서는 `release_tag`에 `v1.1.1`처럼 `v`로 시작하는 값을 넣어야 선택한 ref를 태그하고 릴리스를 게시하며, 비워 두면 검증용 빌드 artifact만 만듭니다. 릴리스에는 `LICENSE`와 `THIRD_PARTY_NOTICES.md`도 포함됩니다. 릴리스는 자산 업로드가 끝날 때까지 초안으로 유지되며 같은 tag의 작업을 다시 실행해도 자산을 교체할 수 있습니다.
+별도 바이너리나 설치 스크립트 없이 플러그인 문서와 스킬 파일을 그대로 사용합니다.
 
 ## 라이선스
 

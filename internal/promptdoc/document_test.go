@@ -147,6 +147,9 @@ flowchart LR
 	if !strings.Contains(doc.ReviewHTML, `class="language-mermaid"`) {
 		t.Fatalf("ReviewHTML does not contain Mermaid block: %s", doc.ReviewHTML)
 	}
+	if !strings.Contains(doc.ReviewMarkdown, "## 실행 계획") || strings.Contains(doc.ReviewMarkdown, "## 선택이 필요한 항목") {
+		t.Fatalf("ReviewMarkdown contains the wrong sections: %s", doc.ReviewMarkdown)
+	}
 	if strings.Contains(doc.ReviewHTML, "새 작업용 프롬프트") || strings.Contains(doc.ReviewHTML, "선택이 필요한 항목") {
 		t.Fatalf("ReviewHTML contains hidden review sections: %s", doc.ReviewHTML)
 	}

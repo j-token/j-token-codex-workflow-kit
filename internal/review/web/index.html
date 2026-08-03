@@ -48,13 +48,38 @@
           <div>
             <p class="eyebrow">사실 관계 <span class="heading-count"><strong id="fact-count">0</strong>개</span></p>
           </div>
+          <button id="fact-add-open" class="button button-secondary fact-add-open" type="button" aria-expanded="false" aria-controls="fact-add-form">+ 사실 추가</button>
+        </div>
+        <div id="fact-add-top-slot" class="fact-add-slot">
+          <form id="fact-add-form" class="fact-add-form" data-placement="top" hidden>
+            <div class="fact-add-heading">
+              <div>
+                <p class="eyebrow">새 사실</p>
+                <h2>검토에 반영할 사실을 추가하세요.</h2>
+              </div>
+              <span id="fact-add-id" class="fact-id">F1</span>
+            </div>
+            <div class="fact-add-fields">
+              <label for="fact-add-content">사실 내용 <span>필수</span></label>
+              <textarea id="fact-add-content" rows="3" maxlength="10000" placeholder="예: 현재 검토 서버는 로컬에서만 실행됩니다."></textarea>
+              <label for="fact-add-evidence">근거 <span>선택</span></label>
+              <input id="fact-add-evidence" maxlength="10000" placeholder="예: internal/review/server.go">
+            </div>
+            <p id="fact-add-error" class="dialog-error" role="status"></p>
+            <div class="fact-add-actions">
+              <button id="fact-add-cancel" class="button button-secondary" type="button">취소</button>
+              <button class="button button-primary" type="submit">사실 추가</button>
+            </div>
+          </form>
         </div>
         <div id="facts" class="fact-list"></div>
         <div id="facts-empty" class="empty-state" hidden>
           <strong>구조화된 팩트가 없습니다.</strong>
           <span>계획 문서 본문은 마지막 단계에서 그대로 확인할 수 있습니다.</span>
         </div>
+        <div id="fact-add-bottom-slot" class="fact-add-slot"></div>
         <footer class="screen-actions">
+          <button id="fact-add-bottom" class="button button-secondary" type="button" aria-expanded="false" aria-controls="fact-add-form">+ 사실 추가</button>
           <button id="facts-next" class="button button-primary" type="button">옵션 선택으로</button>
         </footer>
       </section>
@@ -76,10 +101,32 @@
       </section>
 
       <section id="plan-screen" class="screen plan-screen" hidden>
-        <div class="plan-toolbar">
-          <div>
-            <p class="eyebrow">3 · 계획 검토</p>
-            <h1 id="document-title">Codex 실행 계획</h1>
+        <div class="plan-toolbar" role="toolbar" aria-label="계획 검토 도구">
+          <div class="plan-toolbar-settings">
+            <button id="diff-toggle" class="diff-toggle" type="button" aria-expanded="false" aria-controls="document" disabled>
+              <span id="diff-added" class="diff-added">+0</span>
+              <span id="diff-removed" class="diff-removed">-0</span>
+            </button>
+            <button id="model-picker" class="toolbar-model-picker" type="button">
+              <span>모델</span>
+              <strong id="model-display">gpt-5.6-terra</strong>
+              <small id="model-reason-display" class="sr-only">LLM 권장 사유를 불러오는 중입니다.</small>
+            </button>
+            <input id="model" type="hidden">
+            <input id="model-reason" type="hidden">
+            <label class="toolbar-effort" for="effort">
+              <span>추론 강도</span>
+              <select id="effort">
+                <option>none</option>
+                <option>minimal</option>
+                <option>low</option>
+                <option>medium</option>
+                <option>high</option>
+                <option>xhigh</option>
+                <option>max</option>
+                <option>ultra</option>
+              </select>
+            </label>
           </div>
           <div class="plan-toolbar-actions">
             <button id="plan-back" class="button button-secondary" type="button">옵션 수정</button>
@@ -90,6 +137,7 @@
               <span id="approval-blocked-tooltip" class="approval-tooltip" role="tooltip">남아 있는 코멘트 때문에 승인할 수 없습니다. 피드백을 보내거나 코멘트를 삭제하세요.</span>
             </span>
           </div>
+          <div id="message" class="toolbar-message" role="status"></div>
         </div>
 
         <div class="plan-workspace">
@@ -104,35 +152,6 @@
           </aside>
 
           <article class="paper">
-            <section class="review-console" aria-label="실행 설정">
-                <section class="execution-panel" aria-labelledby="execution-title">
-                  <p id="execution-title" class="rail-label">실행 설정</p>
-                  <div class="execution-fields">
-                    <button id="model-picker" class="model-picker" type="button">
-                      <span>모델</span>
-                      <strong id="model-display">gpt-5.6-terra</strong>
-                      <small id="model-reason-display">LLM 권장 사유를 불러오는 중입니다.</small>
-                      <em>변경</em>
-                    </button>
-                    <input id="model" type="hidden">
-                    <input id="model-reason" type="hidden">
-                    <div class="field">
-                      <label for="effort">추론 강도</label>
-                      <select id="effort">
-                        <option>none</option>
-                        <option>minimal</option>
-                        <option>low</option>
-                        <option>medium</option>
-                        <option>high</option>
-                        <option>xhigh</option>
-                        <option>max</option>
-                        <option>ultra</option>
-                      </select>
-                    </div>
-                  </div>
-                  <div id="message" class="message" role="status"></div>
-                </section>
-            </section>
             <div id="document" class="markdown-body"></div>
           </article>
         </div>

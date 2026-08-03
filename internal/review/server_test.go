@@ -196,3 +196,27 @@ func TestServesEmbeddedReviewAssets(t *testing.T) {
 		}
 	}
 }
+
+func TestApproveKeepsUserAddedFact(t *testing.T) {
+	s := &session{document: promptdoc.Document{}, result: make(chan Result, 1)}
+	body, _ := json.Marshal(submission{
+		Action:          "approve",
+		Model:           "gpt-5.6-terra",
+		ModelReason:     "일반 구현 작업",
+		ReasoningEffort: "medium",
+		Prompt:          "prompt",
+		Facts: []ReviewedFact{{
+			ID: "F2", Status: "사용자 추가", Content: "사용자가 확인한 사실", Evidence: "직접 확인",
+		}},
+	})
+	request := httptest.NewRequest(http.MethodPost, "/token/api/submit", bytes.NewReader(body))
+	response := httptest.NewRecorder()
+	s.handler("/token").ServeHTTP(response, request)
+	if response.Code != http.StatusOK {
+		t.Fatalf("status = %d, body = %s", response.Code, response.Body.String())
+	}
+	result := <-s.result
+	if len(result.Facts) != 1 || result.Facts[0].Status != "사용자 추가" || result.Facts[0].Content != "사용자가 확인한 사실" {
+		t.Fatalf("facts = %#v", result.Facts)
+	}
+}

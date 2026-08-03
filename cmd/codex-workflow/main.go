@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"crypto/sha256"
 	"encoding/json"
 	"errors"
 	"flag"
@@ -68,12 +69,24 @@ func runReview(args []string) error {
 	if err != nil {
 		return err
 	}
+	if previous, err := loadReviewBaseline(path); err == nil && previous != "" {
+		if previousDocument, parseErr := promptdoc.Parse(previous); parseErr == nil {
+			document.PreviousReview = previousDocument.ReviewMarkdown
+		}
+	}
 
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 	result, err := review.Run(ctx, document, review.Options{OpenBrowser: !*noOpen, Writer: os.Stderr, StartAt: *startAt})
 	if err != nil {
 		return err
+	}
+	if result.Status == "feedback" {
+		if err := saveReviewBaseline(path, document.Raw); err != nil {
+			return fmt.Errorf("이전 검토본을 저장할 수 없습니다: %w", err)
+		}
+	} else {
+		_ = clearReviewBaseline(path)
 	}
 
 	if *jsonOutput {
@@ -89,6 +102,53 @@ func runReview(args []string) error {
 		fmt.Println("취소됨")
 	}
 	return nil
+}
+
+func reviewBaselinePath(documentPath string) (string, error) {
+	cacheDirectory, err := os.UserCacheDir()
+	if err != nil {
+		return "", err
+	}
+	digest := sha256.Sum256([]byte(filepath.Clean(documentPath)))
+	return filepath.Join(cacheDirectory, "j-token-codex-workflow", "review-baselines", fmt.Sprintf("%x.md", digest)), nil
+}
+
+func loadReviewBaseline(documentPath string) (string, error) {
+	baselinePath, err := reviewBaselinePath(documentPath)
+	if err != nil {
+		return "", err
+	}
+	content, err := os.ReadFile(baselinePath)
+	if errors.Is(err, os.ErrNotExist) {
+		return "", nil
+	}
+	if err != nil {
+		return "", err
+	}
+	return string(content), nil
+}
+
+func saveReviewBaseline(documentPath, content string) error {
+	baselinePath, err := reviewBaselinePath(documentPath)
+	if err != nil {
+		return err
+	}
+	if err := os.MkdirAll(filepath.Dir(baselinePath), 0o700); err != nil {
+		return err
+	}
+	return os.WriteFile(baselinePath, []byte(content), 0o600)
+}
+
+func clearReviewBaseline(documentPath string) error {
+	baselinePath, err := reviewBaselinePath(documentPath)
+	if err != nil {
+		return err
+	}
+	err = os.Remove(baselinePath)
+	if errors.Is(err, os.ErrNotExist) {
+		return nil
+	}
+	return err
 }
 
 func normalizeReviewArgs(args []string) []string {

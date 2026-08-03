@@ -108,12 +108,35 @@ main { width: min(1320px, calc(100% - 40px)); margin: 0 auto 64px; }
 h1 { margin: 0; font: 620 clamp(32px, 4vw, 54px)/1.08 "Bahnschrift", "Segoe UI", sans-serif; letter-spacing: -.035em; }
 .lede { max-width: 690px; margin: 15px 0 0; color: var(--muted-light); font-size: 15px; line-height: 1.7; }
 .fact-list, .question-list { display: grid; gap: 12px; max-width: 980px; margin: 0 auto; }
-.fact-card {
-  display: grid; grid-template-columns: 44px minmax(0, 1fr) 92px; gap: 14px; align-items: stretch;
-  min-height: 104px; padding: 14px; border: 1px solid var(--line-dark); border-radius: 15px;
-  background: var(--shell-raised); transition: border-color .2s, transform .2s;
+.fact-add-open { flex: 0 0 auto; }
+.fact-add-form {
+  max-width: 980px; margin: 0 auto 12px; padding: 20px 22px; border: 1px dashed #5966a4; border-radius: 15px;
+  background: linear-gradient(135deg, rgba(109,124,255,.09), rgba(20,26,41,.72));
 }
-.fact-card:focus-within { border-color: #5663a3; transform: translateY(-1px); }
+.fact-add-heading { display: flex; align-items: start; justify-content: space-between; gap: 18px; margin-bottom: 18px; }
+.fact-add-heading .eyebrow { margin-bottom: 5px; }
+.fact-add-heading h2 { margin: 0; color: #f4f5f9; font: 600 18px/1.4 "Bahnschrift", sans-serif; }
+.fact-add-fields { display: grid; grid-template-columns: 110px minmax(0, 1fr); gap: 10px 14px; align-items: start; }
+.fact-add-fields label { padding-top: 10px; color: #d5d9e4; font-size: 12px; font-weight: 650; }
+.fact-add-fields label span { margin-left: 4px; color: #7f899d; font-size: 10px; font-weight: 500; }
+.fact-add-fields textarea,
+.fact-add-fields input {
+  width: 100%; padding: 10px 12px; border: 1px solid #3f4965; border-radius: 9px; outline: none;
+  background: #0d111d; color: #f4f5f9; font-size: 13px; line-height: 1.5;
+}
+.fact-add-fields textarea { resize: vertical; min-height: 86px; }
+.fact-add-fields textarea:focus,
+.fact-add-fields input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+.fact-add-actions { display: flex; justify-content: end; gap: 8px; margin-top: 14px; }
+#facts-screen .screen-actions { justify-content: space-between; }
+.fact-card {
+  position: relative; overflow: hidden;
+  display: grid; grid-template-columns: 44px minmax(0, 1fr) 112px; gap: 14px; align-items: stretch;
+  min-height: 104px; padding: 14px; border: 1px solid var(--line-dark); border-radius: 15px;
+  background: var(--shell-raised); transition: border-color .2s, background .2s, box-shadow .2s, transform .2s;
+}
+.fact-card:not(.is-new):not(.is-edited):focus-within { border-color: #5663a3; transform: translateY(-1px); }
+.fact-card::before { content: ""; position: absolute; inset: 0 auto 0 0; width: 5px; background: transparent; }
 .icon-button {
   display: grid; place-items: center; width: 40px; height: 40px; margin-top: 5px;
   border: 1px solid #343c52; border-radius: 50%; background: #0d111d; color: #929caf; cursor: pointer;
@@ -125,19 +148,39 @@ h1 { margin: 0; font: 620 clamp(32px, 4vw, 54px)/1.08 "Bahnschrift", "Segoe UI",
 .fact-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 8px; }
 .fact-id { color: var(--evidence); font: 650 11px "Cascadia Mono", monospace; }
 .status-badge { padding: 3px 7px; border-radius: 99px; background: rgba(60,155,120,.13); color: #8dd2b8; font-size: 10px; }
-.fact-text {
-  width: 100%; min-height: 46px; padding: 0; resize: none; overflow: hidden;
-  border: 0; outline: none; background: transparent; color: #f4f5f9; font-size: 15px; font-weight: 560; line-height: 1.55;
+.change-badge { padding: 3px 7px; border: 1px solid transparent; border-radius: 99px; font: 650 10px "Cascadia Mono", monospace; }
+.change-badge.is-edited { border-color: rgba(226,182,95,.42); background: rgba(226,182,95,.14); color: #f0c875; }
+.change-badge.is-new { border-color: rgba(124,137,255,.48); background: rgba(109,124,255,.16); color: #b3bbff; }
+.fact-content {
+  min-height: 46px; margin: 0; color: #f4f5f9; font-size: 15px; font-weight: 560; line-height: 1.55;
 }
-.fact-text:not([readonly]) { padding: 8px 10px; border-radius: 8px; background: #0d111d; box-shadow: inset 0 0 0 1px #4d5980; }
+.fact-editor {
+  width: 100%; min-height: 46px; padding: 8px 10px; resize: none; overflow: hidden;
+  border: 0; border-radius: 8px; outline: none; background: #0d111d; color: #f4f5f9;
+  box-shadow: inset 0 0 0 1px #4d5980; font-size: 15px; font-weight: 560; line-height: 1.55;
+}
+.fact-editor:focus { box-shadow: inset 0 0 0 1px var(--accent), 0 0 0 3px var(--accent-soft); }
 .evidence { margin: 5px 0 0; color: #8d96aa; font-size: 12px; line-height: 1.45; }
-.edit-button {
-  align-self: center; min-height: 42px; border: 1px solid #3a435b; border-radius: 9px;
-  background: transparent; color: #c6cbd8; font-weight: 650; cursor: pointer;
+.fact-actions { align-self: center; display: grid; gap: 7px; }
+.fact-action-button {
+  min-height: 36px; padding: 0 10px; border: 1px solid #3a435b; border-radius: 9px;
+  background: transparent; color: #c6cbd8; font-size: 12px; font-weight: 650; cursor: pointer;
 }
-.edit-button:hover { border-color: var(--accent); color: #fff; }
-.fact-card.is-edited { border-color: rgba(226,182,95,.55); }
-.fact-card.is-edited .fact-id::after { content: " · 수정됨"; color: var(--evidence); }
+.fact-action-button:hover { border-color: var(--accent); color: #fff; }
+.fact-action-button.has-comment { border-color: rgba(226,182,95,.65); color: var(--evidence); }
+.fact-action-button.has-comment::after { content: " · 있음"; }
+.fact-card.is-edited {
+  border-color: rgba(226,182,95,.72);
+  background: linear-gradient(100deg, rgba(226,182,95,.12), rgba(20,26,41,.98) 44%);
+  box-shadow: 0 10px 30px rgba(115,82,22,.12);
+}
+.fact-card.is-edited::before { background: #e2b65f; }
+.fact-card.is-new {
+  border-color: rgba(109,124,255,.78);
+  background: linear-gradient(100deg, rgba(109,124,255,.15), rgba(20,26,41,.98) 44%);
+  box-shadow: 0 10px 30px rgba(60,72,170,.14);
+}
+.fact-card.is-new::before { background: #7c89ff; }
 
 .question-card { overflow: hidden; border: 1px solid var(--line-dark); border-radius: 17px; background: var(--shell-raised); }
 .question-header { padding: 22px 24px 16px; }
@@ -196,9 +239,40 @@ h1 { margin: 0; font: 620 clamp(32px, 4vw, 54px)/1.08 "Bahnschrift", "Segoe UI",
 .button-feedback:hover:not(:disabled) { background: #e6b85b; }
 
 .plan-screen { width: min(1500px, 100%); }
-.plan-toolbar { display: flex; justify-content: space-between; align-items: end; gap: 24px; margin: 40px 0 22px; }
-.plan-toolbar h1 { font-size: clamp(28px, 3vw, 42px); }
-.plan-toolbar-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 9px; }
+.plan-toolbar {
+  position: sticky; top: 0; z-index: 18; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px 18px;
+  margin: 18px 0; padding: 10px; border: 1px solid rgba(59,67,88,.9); border-radius: 13px;
+  background: rgba(13,17,29,.9); box-shadow: 0 16px 38px rgba(0,0,0,.24); backdrop-filter: blur(18px);
+}
+.plan-toolbar-settings, .plan-toolbar-actions { display: flex; align-items: center; gap: 8px; }
+.plan-toolbar-settings { min-width: 0; }
+.plan-toolbar-actions { flex-wrap: wrap; justify-content: flex-end; }
+.plan-toolbar .button { min-height: 38px; padding: 0 12px; font-size: 12px; }
+.diff-toggle {
+  display: flex; align-items: center; gap: 7px; min-height: 38px; padding: 0 11px; border: 1px solid #3b455e;
+  border-radius: 8px; background: #111827; color: #dce1eb; font: 700 12px "Cascadia Mono", monospace; cursor: pointer;
+}
+.diff-toggle:hover:not(:disabled), .diff-toggle[aria-expanded="true"] { border-color: #7381ff; background: #1a2240; }
+.diff-toggle:disabled { opacity: .45; cursor: default; }
+.diff-added { color: #76d59b; }
+.diff-removed { color: #f1858e; }
+.toolbar-model-picker {
+  display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 8px;
+  min-width: 190px; min-height: 38px; max-width: 240px; padding: 0 10px 0 11px;
+  border: 1px solid #3b455e; border-radius: 8px; background: #111827; color: #edf0f6; text-align: left; cursor: pointer;
+}
+.toolbar-model-picker:hover { border-color: var(--accent); }
+.toolbar-model-picker::after { content: "⌄"; position: relative; top: -1px; color: #8f99ad; font-size: 13px; line-height: 1; }
+.toolbar-model-picker span, .toolbar-effort > span { color: #8f99ad; font-size: 10px; white-space: nowrap; }
+.toolbar-model-picker strong { overflow: hidden; font: 650 12px/1 "Cascadia Mono", monospace; text-overflow: ellipsis; white-space: nowrap; }
+.toolbar-effort {
+  display: flex; align-items: center; gap: 7px; min-height: 38px; padding: 0 8px 0 11px;
+  border: 1px solid #3b455e; border-radius: 8px; background: #111827;
+}
+.toolbar-effort select { border: 0; outline: 0; background: transparent; color: #edf0f6; font: 650 12px "Cascadia Mono", monospace; cursor: pointer; }
+.toolbar-effort option { background: #111827; }
+.toolbar-message { grid-column: 1 / -1; color: #e8b96a; font-size: 11px; line-height: 1.4; }
+.toolbar-message:empty { display: none; }
 .approval-wrap { position: relative; display: inline-flex; }
 .approval-tooltip {
   position: absolute; right: 0; bottom: calc(100% + 9px); z-index: 8; width: 260px;
@@ -209,6 +283,14 @@ h1 { margin: 0; font: 620 clamp(32px, 4vw, 54px)/1.08 "Bahnschrift", "Segoe UI",
 .approval-wrap.is-blocked:hover .approval-tooltip, .approval-wrap.is-blocked:focus-within .approval-tooltip { opacity: 1; transform: translateY(0); }
 .approval-wrap:not(.is-blocked) .approval-tooltip { display: none; }
 .approval-wrap.is-blocked #approve { pointer-events: none; }
+.is-diff-replaced { display: none !important; }
+.inline-redline { display: grid; gap: 5px; margin: 12px 0 18px; font: inherit; }
+.redline-line { width: fit-content; max-width: 100%; padding: 5px 10px; border-radius: 3px; line-height: 1.75; overflow-wrap: anywhere; }
+.redline-line del, .redline-line ins { color: inherit; text-decoration-skip-ink: none; }
+.redline-line.is-removed { border-left: 3px solid #ff7b72; background: #4a2026; color: #ffe1df; }
+.redline-line.is-removed del { text-decoration-color: #ff7b72; text-decoration-line: line-through; text-decoration-thickness: 2px; }
+.redline-line.is-added { border-left: 3px solid #56d364; background: #183d26; color: #d4f8dc; }
+.redline-line.is-added ins { text-decoration: none; }
 .plan-workspace { display: grid; grid-template-columns: 190px minmax(0, 1fr); gap: 18px; align-items: start; }
 .plan-rail { position: sticky; top: 18px; }
 .rail-label { color: #778197; }
@@ -362,15 +444,24 @@ h1 { margin: 0; font: 620 clamp(32px, 4vw, 54px)/1.08 "Bahnschrift", "Segoe UI",
 :root[data-theme="light"] .heading-count strong { color: #202536; }
 :root[data-theme="light"] .fact-card,
 :root[data-theme="light"] .question-card { background: #fff; }
+:root[data-theme="light"] .fact-card.is-edited { background: linear-gradient(100deg, #fff7e5, #fff 44%); }
+:root[data-theme="light"] .fact-card.is-new { background: linear-gradient(100deg, #eef0ff, #fff 44%); }
+:root[data-theme="light"] .change-badge.is-edited { border-color: #dfbd75; background: #fff3d7; color: #8a5a09; }
+:root[data-theme="light"] .change-badge.is-new { border-color: #aeb6f7; background: #eceeff; color: #4f5bc9; }
+:root[data-theme="light"] .fact-add-form { border-color: #9aa5ef; background: linear-gradient(135deg, #f0f2ff, rgba(255,255,255,.88)); }
+:root[data-theme="light"] .fact-add-heading h2 { color: #202536; }
+:root[data-theme="light"] .fact-add-fields label { color: #40495c; }
 :root[data-theme="light"] .icon-button,
-:root[data-theme="light"] .fact-text:not([readonly]),
+:root[data-theme="light"] .fact-editor,
+:root[data-theme="light"] .fact-add-fields textarea,
+:root[data-theme="light"] .fact-add-fields input,
 :root[data-theme="light"] .custom-input,
 :root[data-theme="light"] .option-comment,
 :root[data-theme="light"] .field input,
 :root[data-theme="light"] .field select,
 :root[data-theme="light"] .field textarea { border-color: #cbd2df; background: #f7f9fc; color: #202536; }
-:root[data-theme="light"] .fact-text { color: #202536; }
-:root[data-theme="light"] .edit-button { border-color: #c7cfdd; color: #4f596d; }
+:root[data-theme="light"] .fact-content { color: #202536; }
+:root[data-theme="light"] .fact-action-button { border-color: #c7cfdd; color: #4f596d; }
 :root[data-theme="light"] .recommendation { border-color: #c6cdf8; background: #f1f3ff; color: #35405a; }
 :root[data-theme="light"] .option { border-color: #e1e5ee; }
 :root[data-theme="light"] .option:hover,
@@ -385,6 +476,15 @@ h1 { margin: 0; font: 620 clamp(32px, 4vw, 54px)/1.08 "Bahnschrift", "Segoe UI",
 :root[data-theme="light"] .button-ghost { border-color: #cbd2df; color: #4f596c; }
 :root[data-theme="light"] .button-secondary:hover,
 :root[data-theme="light"] .button-ghost:hover { color: #202536; }
+:root[data-theme="light"] .plan-toolbar { border-color: rgba(203,210,224,.95); background: rgba(255,255,255,.92); box-shadow: 0 14px 34px rgba(40,48,72,.13); }
+:root[data-theme="light"] .diff-toggle,
+:root[data-theme="light"] .toolbar-model-picker,
+:root[data-theme="light"] .toolbar-effort { border-color: #cbd2df; background: #f7f9fc; color: #202536; }
+:root[data-theme="light"] .toolbar-effort select { color: #202536; }
+:root[data-theme="light"] .toolbar-effort option { background: #fff; }
+:root[data-theme="light"] .redline-line.is-removed { border-left-color: #cf222e; background: #ffdedb; color: #82071e; }
+:root[data-theme="light"] .redline-line.is-removed del { text-decoration-color: #cf222e; }
+:root[data-theme="light"] .redline-line.is-added { border-left-color: #1a7f37; background: #d4f8dc; color: #116329; }
 :root[data-theme="light"] .toc a { border-color: #cdd4e1; color: #667085; }
 :root[data-theme="light"] .toc a:hover { color: #202536; }
 :root[data-theme="light"] .review-ledger { border-color: #d7dde8; }
@@ -435,14 +535,23 @@ h1 { margin: 0; font: 620 clamp(32px, 4vw, 54px)/1.08 "Bahnschrift", "Segoe UI",
   .step-line { min-width: 10px; margin: 0 5px; }
   main { width: min(100% - 28px, 660px); }
   .screen-heading { margin-top: 38px; align-items: start; }
+  .screen-heading.is-compact { align-items: center; }
+  .fact-add-fields { grid-template-columns: 1fr; gap: 6px; }
+  .fact-add-fields label { padding-top: 4px; }
   .fact-card { grid-template-columns: 40px minmax(0, 1fr); }
-  .edit-button { grid-column: 2; justify-self: end; min-height: 36px; padding: 0 14px; }
+  .fact-actions { grid-column: 2; display: flex; justify-self: end; }
   .option { grid-template-columns: 22px minmax(0, 1fr); }
   .comment-toggle { grid-column: 2; justify-self: start; padding-left: 0; }
   .screen-actions { flex-wrap: wrap; }
   .action-note { width: 100%; order: -1; }
-  .plan-toolbar { align-items: start; flex-direction: column; }
-  .plan-toolbar-actions { width: 100%; justify-content: flex-start; }
+  .plan-toolbar { top: 0; grid-template-columns: 1fr; }
+  .plan-toolbar-settings { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; width: 100%; }
+  .toolbar-model-picker { width: 100%; min-width: 0; max-width: none; }
+  .toolbar-model-picker span, .toolbar-effort > span { display: none; }
+  .plan-toolbar-actions { width: 100%; justify-content: stretch; }
+  .plan-toolbar-actions .button, .approval-wrap { flex: 1 1 auto; }
+  .approval-wrap .button { width: 100%; }
+  .redline-line { width: auto; padding: 5px 8px; }
   .plan-workspace { display: block; }
   .plan-rail { position: static; margin-bottom: 15px; }
   .toc { display: none; }
