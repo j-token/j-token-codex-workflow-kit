@@ -1,7 +1,7 @@
 {
   "name": "codex-workflow",
-  "version": "1.2.1",
-  "description": "사용자 의도를 먼저 판별하고, 제품·기능은 PRD와 기술 스펙을 단계별로 승인하며, 관련 버그는 조사 후 같은 작업에서 수정하는 한국어 워크플로우입니다.",
+  "version": "1.3.0",
+  "description": "사용자 의도를 먼저 판별하고, 제품·기능·연구 실험·버그에 맞는 서로 다른 승인 흐름을 적용하는 한국어 워크플로우입니다.",
   "author": {
     "name": "j-token",
     "email": "j-token@example.com",
@@ -10,18 +10,19 @@
   "homepage": "https://github.com/j-token/j-token-workflow-kit",
   "repository": "https://github.com/j-token/j-token-workflow-kit",
   "license": "Apache-2.0",
-  "keywords": ["workflow", "intent", "explanation", "prompt", "chatgpt-app", "markdown-review", "spec", "prd", "technical-spec", "spec-audit", "debugging", "figma", "model-selection", "reasoning-effort", "implementation-thread", "codex", "subagents", "orchestration"],
+  "keywords": ["workflow", "intent", "explanation", "research", "experiment", "benchmark", "ablation", "prompt", "chatgpt-app", "markdown-review", "spec", "prd", "technical-spec", "spec-audit", "debugging", "figma", "model-selection", "reasoning-effort", "implementation-thread", "codex", "subagents", "orchestration"],
   "skills": "./skills/",
   "interface": {
     "displayName": "Codex 한국어 워크플로우",
-    "shortDescription": "제품·기능은 단계 승인하고 관련 버그는 조사 후 수정합니다.",
-    "longDescription": "Codex 한국어 워크플로우는 모든 사용자 명령에서 의도를 먼저 판별하고 저장소와 필요한 자료를 조사합니다. 제품·기능 요청은 0.9.0 방식으로 요구사항 조사, PRD 제시와 별도 승인, 기술 스펙 제시와 별도 승인, 새 Codex 구현 작업 순서로 진행합니다. 버그 수정 요청은 원인을 먼저 조사하고 요청 증상과 직접 관련된 원인 및 필수 변경만 같은 작업에서 승인 없이 수정·검증합니다. 조사 중 발견한 별도 버그, 독립 리팩터링과 새 기능은 범위 확장 승인 없이 수정하지 않습니다. 개념과 지식은 j-explain-style로 설명하고 작업 결과는 결과·변경·검증·남은 범위로 전달합니다.",
+    "shortDescription": "제품·연구·버그에 맞는 승인 흐름을 적용합니다.",
+    "longDescription": "Codex 한국어 워크플로우는 모든 사용자 명령에서 의도를 먼저 판별하고 저장소와 필요한 자료를 조사합니다. 제품·기능 요청은 PRD와 기술 스펙을 단계별로 승인하며, 연구 가설은 사전등록 실험 계획과 별도 실행 승인, 결과·교훈 기록 순서로 진행합니다. 버그 수정 요청은 원인을 먼저 조사하고 요청 증상과 직접 관련된 원인 및 필수 변경만 같은 작업에서 승인 없이 수정·검증합니다. 조사 중 발견한 별도 문제는 범위 확장 승인 없이 수정하지 않습니다.",
     "developerName": "j-token",
     "category": "Productivity",
     "capabilities": ["Interactive", "Write", "Code"],
     "defaultPrompt": [
       "$intent-first를 먼저 사용해 이 요청의 의도를 판별해줘.",
       "$requirements-to-spec을 사용해 이 아이디어를 조사하고 PRD부터 작성해줘.",
+      "$research-experiment-workflow를 사용해 이 연구 가설을 조사하고 실행 전 실험 계획을 작성해줘.",
       "이 간단한 수정을 바로 구현하고 검증해줘.",
       "이 버그의 사실과 원인을 조사하고 위험이 낮으면 바로 고쳐줘.",
       "이 기능의 요구사항을 조사하고 PRD부터 작성해줘.",

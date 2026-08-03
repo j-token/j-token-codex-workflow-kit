@@ -1,0 +1,4 @@
+interface:
+  display_name: "연구 실험 워크플로우"
+  short_description: "연구 가설을 사전등록 계획과 검증 가능한 실험으로 전환합니다."
+  default_prompt: "$research-experiment-workflow를 사용해 이 연구 가설을 조사하고 실행 전 실험 계획을 작성해줘."
