@@ -44,6 +44,7 @@ func hydrateReview(document *Document, lines []string, frontmatterEnd int) error
 
 	reviewMarkdown := beforeSection(body, "Codex 실행 설정", "Codex 실행 프롬프트")
 	reviewMarkdown = withoutSection(reviewMarkdown, "선택이 필요한 항목")
+	document.ReviewMarkdown = reviewMarkdown
 	var rendered bytes.Buffer
 	if err := markdownRenderer.Convert([]byte(reviewMarkdown), &rendered); err != nil {
 		return fmt.Errorf("검토용 Markdown을 렌더링할 수 없습니다: %w", err)

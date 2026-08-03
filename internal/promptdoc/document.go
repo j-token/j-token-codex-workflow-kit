@@ -22,6 +22,8 @@ type Document struct {
 	Prompt          string     `json:"prompt"`
 	Title           string     `json:"title"`
 	ReviewHTML      string     `json:"reviewHtml"`
+	ReviewMarkdown  string     `json:"reviewMarkdown"`
+	PreviousReview  string     `json:"previousReviewMarkdown,omitempty"`
 	Facts           []Fact     `json:"facts"`
 	Questions       []Question `json:"questions"`
 }

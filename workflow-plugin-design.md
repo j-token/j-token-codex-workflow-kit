@@ -61,28 +61,26 @@ Plannotator `setup goal`의 검증 가능한 팩트 구조는 사용하지만 �
 
 새 작업 도구가 있으면 승인된 설정으로 작업을 만들고 첫 진행 상태를 확인한다. 도구가 없거나 실패하면 모델, 추론 강도, 사유와 완전한 프롬프트를 코드 블록으로 출력한다.
 
-## OS별 바이너리
+## 검토 채널
 
-프롬프트 검토는 Go로 작성한 `codex-workflow` 단일 바이너리가 담당한다.
+검토의 핵심 축은 `사실관계 → 옵션 → 계획서`의 상태 순서를 어디에 기록하는가다.
+
+- 기각: Go 바이너리와 로컬 브라우저 UI를 유지한다. OS별 교차 빌드, 설치 스크립트, 임베디드 UI 자산과 릴리스 검증을 계속 관리해야 한다.
+- 채택: ChatGPT 앱에서는 드래그로 선택한 문장과 메시지의 사실 추가·코멘트를 사용하고, Codex CLI에서는 `.codex/temp/<slug>-review.md`를 편집한다. Codex는 두 채널의 결과를 같은 프롬프트 문서에 반영한다.
 
 ```mermaid
-sequenceDiagram
-    participant C as Codex 스킬
-    participant B as codex-workflow 바이너리
-    participant U as 로컬 브라우저
-    C->>B: review <prompt.md> --json
-    B->>U: 127.0.0.1 임의 포트에서 검토 UI 열기
-    U->>B: 모델·추론 강도·프롬프트 수정 후 승인/취소
-    B-->>C: 승인 결과 JSON
-    C->>C: 프롬프트 문서 갱신 후 새 Codex 작업 생성
+flowchart LR
+    A["사실관계"] --> B["옵션"]
+    B --> C["계획서"]
+    C --> D{"검토 채널"}
+    D -- "ChatGPT 앱" --> E["드래그 선택·추가·코멘트"]
+    D -- "Codex CLI" --> F["임시 Markdown 편집"]
+    E --> G["권위 프롬프트 문서 갱신"]
+    F --> G
+    G --> H["승인 후 구현 작업 시작"]
 ```
 
-- 지원 대상: Windows, macOS, Linux의 x64와 arm64
-- 배포 형식: 실행 파일 6개와 파일별 SHA-256 sidecar
-- 설치: `scripts/install.sh`, `scripts/install.ps1`
-- 릴리스: `.github/workflows/release-binaries.yml`이 tag `v*`에서 교차 컴파일·smoke test·GitHub Release 업로드 수행
-- 보안: loopback 바인딩, 세션별 무작위 URL 토큰, 2 MiB 요청 제한, 외부 UI 자산 없음
-- fallback: 바이너리가 없으면 채팅에서 동일한 계획·모델·추론 강도·프롬프트를 검토
+앱에서 코멘트가 생기면 영향 단계부터 다시 제시한다. CLI에서 코멘트가 생기면 임시 Markdown의 `시작 단계`를 기준으로 같은 순서로 다시 검토한다.
 
 ## 레퍼런스
 

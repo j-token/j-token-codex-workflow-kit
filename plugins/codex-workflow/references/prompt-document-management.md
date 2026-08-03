@@ -15,9 +15,9 @@ Plannotator의 goal 준비 흐름은 인터뷰 결과, 팩트 검토, 팩트 목
 - 저장소: https://github.com/backnotprop/plannotator
 - 비교에 사용한 로컬 스킬: `plannotator-setup-goal`
 
-### Plannotator의 OS별 바이너리 배포
+### Plannotator의 배포 방식 검토
 
-Plannotator는 macOS, Linux와 Windows용 실행 파일을 릴리스 자산으로 제공하고 각 바이너리에 SHA-256 sidecar를 붙인다. macOS와 Linux는 shell installer, Windows는 PowerShell installer를 제공하며 릴리스 파이프라인에서 컴파일된 바이너리의 smoke test도 수행한다. 이 구조를 `codex-workflow`의 6개 OS·아키텍처 자산, checksum, 두 설치 스크립트와 Linux x64 smoke test에 적용한다.
+Plannotator의 macOS·Linux·Windows 실행 파일과 설치·릴리스 파이프라인은 참고할 수 있었지만, `codex-workflow`에 같은 구조를 유지하면 OS별 빌드, checksum, 설치 스크립트와 smoke test를 계속 관리해야 한다. 현재는 이 배포 방식을 채택하지 않고 ChatGPT 앱의 드래그 선택과 Codex CLI의 임시 Markdown 편집으로 검토를 수행한다.
 
 - https://github.com/backnotprop/plannotator/releases
 - https://github.com/backnotprop/plannotator
@@ -52,6 +52,7 @@ Michael Nygard는 큰 문서가 갱신되지 않는 문제를 지적하고, 아�
 
 - 기각: PRD와 기술 스펙을 계속 분리하고 폴더만 정리한다. 같은 범위·수용 기준·결정의 최신 상태를 여러 파일에서 맞춰야 하므로 핵심 문제를 남긴다.
 - 기각: Plannotator의 인터뷰·팩트·계획 JSON을 그대로 복제한다. 출처 추적은 좋아지지만 goal당 파일 수가 늘어난다.
+- 기각: OS별 검토 바이너리와 로컬 브라우저 UI를 계속 배포한다. 검토 순서는 유지되지만 빌드·설치·자산 관리가 실행 계약보다 커진다.
 - 채택: 빠른 작업은 문서 없이 실행하고, 계획 작업은 `카탈로그 1개 + 작업당 권위 프롬프트 문서 1개`로 관리한다. 사실과 근거, 조건, 결정, 계획, 모델, 추론 강도와 최종 프롬프트를 한 파일에서 갱신한다.
 
 ## 수명 주기

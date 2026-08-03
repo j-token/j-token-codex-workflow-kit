@@ -10,13 +10,12 @@
 4. 비가역·외부 영향 행동은 그 행동 직전에 승인받는다.
 5. PRD, 기술 스펙, 감사 보고서와 하위 에이전트 검토는 필요할 때만 추가한다.
 6. 새 Codex 작업 생성에 실패하면 모델, 추론 강도, 사유와 완전한 프롬프트를 출력한다.
-7. 계획 작업은 가능하면 OS별 `codex-workflow review <prompt.md> --json` 브라우저 UI에서 검토한다.
-8. 바이너리가 없으면 채팅 검토로 fallback하며 작업을 차단하지 않는다.
+7. ChatGPT 앱에서는 드래그 선택과 메시지로 사실 추가·수정·코멘트를 남긴다.
+8. Codex CLI에서는 `.codex/temp/<slug>-review.md`를 편집하고, 결과를 같은 권위 프롬프트 문서에 반영한다.
 
 ## 관련 문서
 
 - 저장소 설계: `workflow-plugin-design.md`
 - 조사와 출처: `plugins/codex-workflow/references/prompt-document-management.md`
 - 핵심 스킬: `plugins/codex-workflow/skills/setup-codex-prompt/SKILL.md`
-- 바이너리 진입점: `cmd/codex-workflow/main.go`
-- 릴리스 워크플로우: `.github/workflows/release-binaries.yml`
+- CLI 검토 템플릿: `plugins/codex-workflow/skills/setup-codex-prompt/SKILL.md`

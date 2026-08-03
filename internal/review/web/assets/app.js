@@ -2,6 +2,7 @@ const byId = (id) => document.getElementById(id);
 
 const icons = {
   undo: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 8 5 12l4 4"/><path d="M5 12h8a6 6 0 1 1 0 12" transform="translate(0 -6)"/></svg>',
+  remove: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7l10 10M17 7 7 17"/></svg>',
 };
 
 let documentData = null;
@@ -13,6 +14,9 @@ let currentStep = 0;
 let highestStep = 0;
 let disabledSnapshot = [];
 let commentHoverTimer = null;
+let planDiff = [];
+let planDiffHunks = [];
+let diffOpen = false;
 const themeStorageKey = 'codex-workflow-theme';
 
 function createElement(tag, className, text) {
@@ -86,35 +90,54 @@ function renderFacts() {
     const card = createElement('article', 'fact-card');
     const undo = createElement('button', 'icon-button');
     undo.type = 'button';
-    undo.title = '원래 사실로 되돌리기';
-    undo.setAttribute('aria-label', `${fact.id} 원래 내용으로 되돌리기`);
-    undo.innerHTML = icons.undo;
+    undo.title = fact.isNew ? '추가한 사실 삭제' : '원래 사실로 되돌리기';
+    undo.setAttribute('aria-label', `${fact.id} ${fact.isNew ? '추가한 사실 삭제' : '원래 내용으로 되돌리기'}`);
+    undo.innerHTML = fact.isNew ? icons.remove : icons.undo;
 
     const main = createElement('div', 'fact-main');
     const meta = createElement('div', 'fact-meta');
     meta.append(createElement('span', 'fact-id', fact.id || `F${index + 1}`));
     meta.append(createElement('span', 'status-badge', fact.status || '확인됨'));
-    const textarea = createElement('textarea', 'fact-text');
+    const changeBadge = createElement('span', 'change-badge');
+    changeBadge.hidden = true;
+    meta.append(changeBadge);
+    const content = createElement('p', 'fact-content', fact.content);
+    const textarea = createElement('textarea', 'fact-editor');
     textarea.value = fact.content;
-    textarea.readOnly = true;
     textarea.rows = 1;
+    textarea.hidden = true;
     textarea.setAttribute('aria-label', `${fact.id || `F${index + 1}`} 사실 내용`);
     const evidence = createElement('p', 'evidence', fact.evidence ? `근거 · ${fact.evidence}` : '근거 · 계획 문서');
-    main.append(meta, textarea, evidence);
+    main.append(meta, content, textarea, evidence);
 
-    const edit = createElement('button', 'edit-button', '수정');
+    const actions = createElement('div', 'fact-actions');
+    const comment = createElement('button', 'fact-action-button', '코멘트');
+    comment.type = 'button';
+    comment.setAttribute('aria-label', `${fact.id || `F${index + 1}`} 사실에 코멘트`);
+    const factSection = `사실 관계 · ${fact.id || `F${index + 1}`}`;
+    comment.classList.toggle('has-comment', commentsState.some((item) => item.kind === 'block' && item.section === factSection));
+    comment.addEventListener('click', () => openCommentDialog('block', fact.content, factSection));
+
+    const edit = createElement('button', 'fact-action-button', '수정');
     edit.type = 'button';
     edit.setAttribute('aria-label', `${fact.id || `F${index + 1}`} 사실 수정`);
+    actions.append(comment, edit);
 
     const sync = () => {
-      const edited = fact.content !== fact.original;
+      const edited = !fact.isNew && fact.content !== fact.original;
       card.classList.toggle('is-edited', edited);
-      undo.disabled = !edited;
-      autoSize(textarea);
+      card.classList.toggle('is-new', Boolean(fact.isNew));
+      changeBadge.hidden = !fact.isNew && !edited;
+      changeBadge.className = `change-badge ${fact.isNew ? 'is-new' : edited ? 'is-edited' : ''}`.trim();
+      changeBadge.textContent = fact.isNew ? '새로 추가됨' : edited ? '변경됨' : '';
+      undo.disabled = !fact.isNew && !edited;
+      content.textContent = fact.content;
+      if (!textarea.hidden) autoSize(textarea);
     };
     edit.addEventListener('click', () => {
-      const editing = textarea.readOnly;
-      textarea.readOnly = !editing;
+      const editing = textarea.hidden;
+      textarea.hidden = !editing;
+      content.hidden = editing;
       edit.textContent = editing ? '완료' : '수정';
       edit.setAttribute(
         'aria-label',
@@ -130,14 +153,72 @@ function renderFacts() {
       sync();
     });
     undo.addEventListener('click', () => {
+      if (fact.isNew) {
+        factState = factState.filter((candidate) => candidate !== fact);
+        renderFacts();
+        return;
+      }
       fact.content = fact.original;
       textarea.value = fact.original;
       sync();
     });
 
-    card.append(undo, main, edit);
+    card.append(undo, main, actions);
     container.append(card);
     sync();
+  });
+}
+
+function nextFactId() {
+  const used = new Set(factState.map((fact) => String(fact.id || '').toUpperCase()));
+  let number = 1;
+  while (used.has(`F${number}`)) number += 1;
+  return `F${number}`;
+}
+
+function setFactAddForm(open) {
+  const form = byId('fact-add-form');
+  form.hidden = !open;
+  byId('fact-add-open').setAttribute('aria-expanded', String(open));
+  byId('fact-add-bottom').setAttribute('aria-expanded', String(open));
+  byId('fact-add-error').textContent = '';
+  if (open) {
+    byId('fact-add-id').textContent = nextFactId();
+    byId('fact-add-content').focus();
+  } else {
+    form.reset();
+  }
+}
+
+function openFactAddForm(placement) {
+  const form = byId('fact-add-form');
+  byId(`fact-add-${placement}-slot`).append(form);
+  form.dataset.placement = placement;
+  setFactAddForm(true);
+  form.scrollIntoView({behavior: 'smooth', block: 'center'});
+}
+
+function addFact(event) {
+  event.preventDefault();
+  const content = byId('fact-add-content').value.trim();
+  if (!content) {
+    byId('fact-add-error').textContent = '추가할 사실 내용을 입력하세요.';
+    byId('fact-add-content').focus();
+    return;
+  }
+  factState.push({
+    id: nextFactId(),
+    status: '사용자 추가',
+    content,
+    evidence: byId('fact-add-evidence').value.trim(),
+    original: content,
+    isNew: true,
+  });
+  setFactAddForm(false);
+  renderFacts();
+  showToast('사실을 추가했습니다.', true);
+  window.requestAnimationFrame(() => {
+    byId('facts').lastElementChild?.scrollIntoView({behavior: 'smooth', block: 'center'});
   });
 }
 
@@ -419,6 +500,7 @@ function showCommentHover(comment, anchor) {
     commentsState = commentsState.filter((candidate) => candidate.id !== comment.id);
     hover.hidden = true;
     renderComments();
+    if (currentStep === 0) renderFacts();
   };
   hover.style.left = `${Math.min(window.innerWidth - 300, Math.max(12, rect.left))}px`;
   hover.style.top = `${Math.min(window.innerHeight - 150, rect.bottom + 8)}px`;
@@ -465,8 +547,16 @@ function makeMermaidInteractive(diagram) {
     offsetY = 0;
     applyTransform();
   };
-  const zoom = (delta) => {
-    scale = Math.min(3, Math.max(.6, Number((scale + delta).toFixed(2))));
+  const zoom = (delta, anchor = null) => {
+    const previousScale = scale;
+    const nextScale = Math.min(3, Math.max(.6, Number((scale + delta).toFixed(2))));
+    if (anchor && nextScale !== previousScale) {
+      const bounds = svg.getBoundingClientRect();
+      const ratio = nextScale / previousScale;
+      offsetX += (1 - ratio) * (anchor.x - (bounds.left + bounds.width / 2));
+      offsetY += (1 - ratio) * (anchor.y - (bounds.top + bounds.height / 2));
+    }
+    scale = nextScale;
     applyTransform();
   };
   const toolButton = (text, label, action) => {
@@ -501,7 +591,7 @@ function makeMermaidInteractive(diagram) {
   diagram.setAttribute('aria-label', '상호작용 다이어그램. 마우스 휠로 확대하거나 축소하고 드래그하여 이동할 수 있습니다.');
   diagram.addEventListener('wheel', (event) => {
     event.preventDefault();
-    zoom(event.deltaY < 0 ? .1 : -.1);
+    zoom(event.deltaY < 0 ? .1 : -.1, {x: event.clientX, y: event.clientY});
   }, {passive: false});
   diagram.addEventListener('pointerdown', (event) => {
     if (event.button !== 0) return;
@@ -572,6 +662,197 @@ function renderMath(container) {
     strict: 'warn',
     trust: false,
   });
+}
+
+function computeLineDiff(previous, current) {
+  const before = previous.replace(/\r\n?/g, '\n').replace(/\n$/, '').split('\n');
+  const after = current.replace(/\r\n?/g, '\n').replace(/\n$/, '').split('\n');
+  const columns = after.length + 1;
+  const cellCount = (before.length + 1) * columns;
+  if (cellCount > 4_000_000) {
+    let prefix = 0;
+    while (prefix < before.length && prefix < after.length && before[prefix] === after[prefix]) prefix += 1;
+    let suffix = 0;
+    while (
+      suffix < before.length - prefix
+      && suffix < after.length - prefix
+      && before[before.length - 1 - suffix] === after[after.length - 1 - suffix]
+    ) suffix += 1;
+    return [
+      ...before.slice(0, prefix).map((text) => ({type: 'context', text})),
+      ...before.slice(prefix, before.length - suffix).map((text) => ({type: 'removed', text})),
+      ...after.slice(prefix, after.length - suffix).map((text) => ({type: 'added', text})),
+      ...before.slice(before.length - suffix).map((text) => ({type: 'context', text})),
+    ];
+  }
+
+  const lcs = new Uint32Array(cellCount);
+  for (let left = before.length - 1; left >= 0; left -= 1) {
+    for (let right = after.length - 1; right >= 0; right -= 1) {
+      const index = left * columns + right;
+      lcs[index] = before[left] === after[right]
+        ? lcs[(left + 1) * columns + right + 1] + 1
+        : Math.max(lcs[(left + 1) * columns + right], lcs[left * columns + right + 1]);
+    }
+  }
+
+  const result = [];
+  let left = 0;
+  let right = 0;
+  while (left < before.length && right < after.length) {
+    if (before[left] === after[right]) {
+      result.push({type: 'context', text: before[left]});
+      left += 1;
+      right += 1;
+    } else if (lcs[(left + 1) * columns + right] >= lcs[left * columns + right + 1]) {
+      result.push({type: 'removed', text: before[left]});
+      left += 1;
+    } else {
+      result.push({type: 'added', text: after[right]});
+      right += 1;
+    }
+  }
+  while (left < before.length) result.push({type: 'removed', text: before[left++]});
+  while (right < after.length) result.push({type: 'added', text: after[right++]});
+  return result;
+}
+
+function unifiedDiffHunks(lines, contextSize = 3) {
+  let oldLine = 1;
+  let newLine = 1;
+  const numbered = lines.map((line) => {
+    const item = {
+      ...line,
+      oldLine: line.type === 'added' ? null : oldLine,
+      newLine: line.type === 'removed' ? null : newLine,
+    };
+    if (line.type !== 'added') oldLine += 1;
+    if (line.type !== 'removed') newLine += 1;
+    return item;
+  });
+
+  const changes = numbered
+    .map((line, index) => line.type === 'context' ? -1 : index)
+    .filter((index) => index >= 0);
+  if (!changes.length) return [];
+
+  const ranges = [];
+  let start = Math.max(0, changes[0] - contextSize);
+  let end = Math.min(numbered.length, changes[0] + contextSize + 1);
+  for (const change of changes.slice(1)) {
+    const nextStart = Math.max(0, change - contextSize);
+    const nextEnd = Math.min(numbered.length, change + contextSize + 1);
+    if (nextStart <= end) end = Math.max(end, nextEnd);
+    else {
+      ranges.push([start, end]);
+      start = nextStart;
+      end = nextEnd;
+    }
+  }
+  ranges.push([start, end]);
+
+  return ranges.map(([rangeStart, rangeEnd]) => {
+    const hunkLines = numbered.slice(rangeStart, rangeEnd);
+    const oldCount = hunkLines.filter((line) => line.type !== 'added').length;
+    const newCount = hunkLines.filter((line) => line.type !== 'removed').length;
+    const oldBefore = numbered.slice(0, rangeStart).filter((line) => line.type !== 'added').length;
+    const newBefore = numbered.slice(0, rangeStart).filter((line) => line.type !== 'removed').length;
+    const oldStart = oldCount === 0 ? oldBefore : oldBefore + 1;
+    const newStart = newCount === 0 ? newBefore : newBefore + 1;
+    return {
+      header: `@@ -${oldStart},${oldCount} +${newStart},${newCount} @@`,
+      lines: hunkLines,
+    };
+  });
+}
+
+function diffSearchText(markdownLine) {
+  return markdownLine
+    .replace(/^\s{0,3}(?:#{1,6}\s+|>\s*|[-+*]\s+|\d+[.)]\s+)/, '')
+    .replace(/!\[([^\]]*)\]\([^)]*\)/g, '$1')
+    .replace(/\[([^\]]+)\]\([^)]*\)/g, '$1')
+    .replace(/[*_~`]/g, '')
+    .replace(/\\([\\`*_[\]{}()#+\-.!|>])/g, '$1')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function findDiffAnchor(container, hunk) {
+  const candidates = [...container.querySelectorAll('h1, h2, h3, h4, h5, h6, p, li, pre, table, blockquote')];
+  const changedLines = [
+    ...hunk.lines.filter((line) => line.type === 'added'),
+    ...hunk.lines.filter((line) => line.type === 'context'),
+  ];
+  for (const line of changedLines) {
+    const wanted = diffSearchText(line.text);
+    if (!wanted) continue;
+    const exact = candidates.find((candidate) => candidate.textContent.replace(/\s+/g, ' ').trim() === wanted);
+    if (exact) return exact;
+    const containing = candidates.find((candidate) => candidate.textContent.replace(/\s+/g, ' ').trim().includes(wanted));
+    if (containing) return containing;
+  }
+  return container.firstElementChild;
+}
+
+function createRedlineHunk(hunk) {
+  const block = createElement('section', 'inline-redline');
+  block.setAttribute('aria-label', '수정 전후 문구');
+  hunk.lines.filter((line) => line.type !== 'context').forEach((line) => {
+    const row = createElement('div', `redline-line is-${line.type}`);
+    const label = createElement('span', 'sr-only', line.type === 'removed' ? '삭제된 문구: ' : '추가된 문구: ');
+    const text = document.createElement(line.type === 'removed' ? 'del' : 'ins');
+    text.textContent = diffSearchText(line.text) || ' ';
+    row.append(label, text);
+    block.append(row);
+  });
+  return block;
+}
+
+function renderInlinePlanDiffs(container) {
+  container.querySelectorAll('.inline-redline').forEach((block) => block.remove());
+  container.querySelectorAll('.is-diff-replaced').forEach((node) => node.classList.remove('is-diff-replaced'));
+  if (!diffOpen || !planDiffHunks.length) return;
+
+  planDiffHunks.forEach((hunk) => {
+    const anchor = findDiffAnchor(container, hunk);
+    let insertionPoint = anchor;
+    while (insertionPoint && insertionPoint.parentElement !== container) insertionPoint = insertionPoint.parentElement;
+    if (!insertionPoint) insertionPoint = container.firstElementChild;
+    const block = createRedlineHunk(hunk);
+    container.insertBefore(block, insertionPoint || null);
+    if (anchor && anchor.parentElement === container) anchor.classList.add('is-diff-replaced');
+  });
+}
+
+function renderPlanDiff() {
+  const previous = documentData.previousReviewMarkdown || '';
+  const toggle = byId('diff-toggle');
+  if (!previous) {
+    planDiff = [];
+    planDiffHunks = [];
+    diffOpen = false;
+    toggle.disabled = true;
+    toggle.title = '직전 검토본이 없습니다.';
+    byId('diff-added').textContent = '+0';
+    byId('diff-removed').textContent = '-0';
+    return;
+  }
+
+  planDiff = computeLineDiff(previous, documentData.reviewMarkdown || '');
+  planDiffHunks = unifiedDiffHunks(planDiff);
+  const added = planDiff.filter((line) => line.type === 'added').length;
+  const removed = planDiff.filter((line) => line.type === 'removed').length;
+  byId('diff-added').textContent = `+${added}`;
+  byId('diff-removed').textContent = `-${removed}`;
+  toggle.disabled = added === 0 && removed === 0;
+  toggle.title = toggle.disabled ? '직전 검토본과 달라진 내용이 없습니다.' : '직전 검토본과 비교';
+
+}
+
+function setDiffOpen(open) {
+  diffOpen = open;
+  byId('diff-toggle').setAttribute('aria-expanded', String(diffOpen));
+  renderInlinePlanDiffs(byId('document'));
 }
 
 function mermaidThemeVariables() {
@@ -655,6 +936,7 @@ async function renderPlanDocument() {
     }
   }
   applyCommentHighlights();
+  renderInlinePlanDiffs(container);
 }
 
 function renderComments() {
@@ -685,6 +967,7 @@ function preparePlan() {
   byId('ledger-facts').textContent = String(factState.length);
   byId('ledger-choices').textContent = String(questionState.length);
   renderComments();
+  renderPlanDiff();
   renderPlanDocument();
 }
 
@@ -759,17 +1042,26 @@ function composePrompt(facts, selections) {
 
 function openCommentDialog(kind, quote = '', section = '') {
   pendingComment = {kind, quote, section};
+  clearTextSelection();
+  const factComment = kind === 'block' && section.startsWith('사실 관계 · ');
   byId('comment-kind').textContent = kind === 'global'
     ? '전역 코멘트'
-    : kind === 'block' ? `블록 코멘트 · ${section}` : `본문 코멘트 · ${section}`;
+    : factComment ? `사실 코멘트 · ${section.replace('사실 관계 · ', '')}`
+      : kind === 'block' ? `블록 코멘트 · ${section}` : `본문 코멘트 · ${section}`;
   byId('comment-dialog-title').textContent = kind === 'global'
     ? '계획 전체에 의견 남기기'
-    : kind === 'block' ? '블록 전체에 의견 남기기' : '선택한 내용에 의견 남기기';
+    : factComment ? '사실에 코멘트 남기기'
+      : kind === 'block' ? '블록 전체에 의견 남기기' : '선택한 내용에 의견 남기기';
   byId('comment-quote').textContent = quote;
-  byId('comment-text').value = '';
+  const commentText = byId('comment-text');
+  commentText.value = '';
   byId('comment-error').textContent = '';
-  byId('comment-dialog').showModal();
-  byId('comment-text').focus();
+  const dialog = byId('comment-dialog');
+  dialog.showModal();
+  commentText.focus({preventScroll: true});
+  window.requestAnimationFrame(() => {
+    if (dialog.open) commentText.focus({preventScroll: true});
+  });
 }
 
 function closeCommentDialog() {
@@ -793,6 +1085,7 @@ function saveComment() {
   });
   closeCommentDialog();
   renderComments();
+  if (currentStep === 0) renderFacts();
   applyCommentHighlights();
 }
 
@@ -846,14 +1139,17 @@ function showToast(text, success = false) {
 
 function showClosingScreen(action) {
   const approved = action === 'approve';
+  const feedback = action === 'feedback';
   byId('app-shell').hidden = true;
   byId('toast').hidden = true;
   byId('closing-screen').hidden = false;
-  byId('closing-kicker').textContent = approved ? '검토 완료' : '검토 취소';
-  byId('closing-title').textContent = approved ? '승인 결과를 전달했습니다.' : '검토를 취소했습니다.';
+  byId('closing-kicker').textContent = approved ? '검토 완료' : feedback ? '피드백 전달 완료' : '검토 취소';
+  byId('closing-title').textContent = approved
+    ? '승인 결과를 전달했습니다.'
+    : feedback ? '수정 의견을 전달했습니다.' : '검토를 취소했습니다.';
   byId('closing-message').textContent = '5초 후 이 페이지가 자동으로 닫힙니다.';
   byId('closing-fallback').hidden = true;
-  document.title = approved ? '검토 완료' : '검토 취소';
+  document.title = approved ? '검토 완료' : feedback ? '피드백 전달 완료' : '검토 취소';
   history.replaceState(null, '', `${location.pathname}${location.search}#closed`);
 
   const attemptClose = () => {
@@ -865,20 +1161,23 @@ function showClosingScreen(action) {
     }, 350);
   };
 
-  let remaining = 5;
-  const timer = window.setInterval(() => {
-    remaining -= 1;
+  const closeDelay = 4_750;
+  const deadline = Date.now() + closeDelay;
+  const countdown = window.setInterval(() => {
+    const remaining = Math.max(0, Math.ceil((deadline - Date.now()) / 1000));
     byId('closing-message').textContent = remaining > 0
       ? `${remaining}초 후 이 페이지가 자동으로 닫힙니다.`
       : '페이지를 닫고 있습니다…';
-    if (remaining === 0) {
-      window.clearInterval(timer);
-      attemptClose();
-    }
-  }, 1000);
+  }, 250);
+  const closeTimer = window.setTimeout(() => {
+    window.clearInterval(countdown);
+    byId('closing-message').textContent = '페이지를 닫고 있습니다…';
+    attemptClose();
+  }, closeDelay);
 
   byId('close-now').onclick = () => {
-    window.clearInterval(timer);
+    window.clearInterval(countdown);
+    window.clearTimeout(closeTimer);
     attemptClose();
   };
   byId('close-now').focus();
@@ -935,13 +1234,8 @@ async function submit(action) {
     });
     const result = await response.json();
     if (!response.ok) throw new Error(result.error || '검토 결과를 저장하지 못했습니다.');
-    if (action === 'approve' || action === 'cancel') {
-      showClosingScreen(action);
-      return;
-    }
-    message.classList.add('is-success');
-    message.textContent = '피드백을 보냈습니다. LLM이 수정 범위를 판단한 뒤 필요한 단계에서 다시 시작합니다.';
-    showToast(message.textContent, true);
+    showClosingScreen(action);
+    return;
   } catch (error) {
     setSubmitting(false);
     renderComments();
@@ -968,7 +1262,6 @@ async function load() {
 
   byId('path').textContent = documentData.path;
   byId('path').title = documentData.path;
-  byId('document-title').textContent = documentData.title;
   byId('model').value = documentData.model;
   byId('model-reason').value = documentData.modelReason || defaultModelReason(documentData.model);
   updateModelDisplay();
@@ -994,6 +1287,7 @@ byId('theme-toggle').addEventListener('click', () => {
   applyTheme(document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark');
 });
 byId('model-picker').addEventListener('click', openModelDialog);
+byId('diff-toggle').addEventListener('click', () => setDiffOpen(!diffOpen));
 byId('model-close').addEventListener('click', closeModelDialog);
 byId('model-cancel').addEventListener('click', closeModelDialog);
 byId('model-save').addEventListener('click', saveModelSelection);
@@ -1005,6 +1299,16 @@ byId('model-preset').addEventListener('change', () => {
 byId('comment-hover').addEventListener('mouseenter', () => window.clearTimeout(commentHoverTimer));
 byId('comment-hover').addEventListener('mouseleave', scheduleCommentHoverClose);
 byId('facts-next').addEventListener('click', () => showStep(1));
+byId('fact-add-open').addEventListener('click', () => {
+  if (byId('fact-add-form').hidden || byId('fact-add-form').dataset.placement !== 'top') openFactAddForm('top');
+  else setFactAddForm(false);
+});
+byId('fact-add-bottom').addEventListener('click', () => {
+  if (byId('fact-add-form').hidden || byId('fact-add-form').dataset.placement !== 'bottom') openFactAddForm('bottom');
+  else setFactAddForm(false);
+});
+byId('fact-add-cancel').addEventListener('click', () => setFactAddForm(false));
+byId('fact-add-form').addEventListener('submit', addFact);
 byId('choices-back').addEventListener('click', () => showStep(0));
 byId('choices-next').addEventListener('click', () => { if (validateChoices()) showStep(2); });
 byId('plan-back').addEventListener('click', () => showStep(1));
@@ -1012,6 +1316,7 @@ byId('approve').addEventListener('click', () => submit('approve'));
 byId('send-feedback').addEventListener('click', () => submit('feedback'));
 byId('top-cancel').addEventListener('click', () => submit('cancel'));
 byId('global-comment').addEventListener('click', () => openCommentDialog('global', '', '전체 계획'));
+byId('selection-comment').addEventListener('mousedown', (event) => event.preventDefault());
 byId('selection-comment').addEventListener('click', () => {
   if (pendingComment) openCommentDialog('inline', pendingComment.quote, pendingComment.section);
 });
