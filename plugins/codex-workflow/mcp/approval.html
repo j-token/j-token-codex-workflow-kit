@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    :root { color-scheme: light dark; font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; }
+    * { box-sizing: border-box; }
+    body { margin: 0; padding: 14px; color: CanvasText; background: transparent; }
+    .card { display: grid; gap: 12px; }
+    h2 { margin: 0; font-size: 16px; line-height: 1.35; }
+    p { margin: 0; color: color-mix(in srgb, CanvasText 76%, transparent); font-size: 14px; line-height: 1.55; white-space: pre-wrap; }
+    .actions { display: flex; flex-wrap: wrap; gap: 8px; }
+    button { border: 1px solid color-mix(in srgb, CanvasText 20%, transparent); border-radius: 8px; padding: 8px 13px; font: inherit; font-weight: 650; cursor: pointer; }
+    button:disabled { cursor: default; opacity: .55; }
+    .approve { color: white; background: #2563eb; border-color: #2563eb; }
+    .reject { color: CanvasText; background: color-mix(in srgb, Canvas 92%, CanvasText 8%); }
+    .status { min-height: 20px; font-size: 13px; }
+    .error { color: #dc2626; }
+  </style>
+</head>
+<body>
+  <main class="card" aria-live="polite">
+    <h2 id="title">승인 확인</h2>
+    <p id="message">승인 요청을 불러오는 중입니다.</p>
+    <div class="actions" id="actions">
+      <button class="approve" id="approve" type="button">승인</button>
+      <button class="reject" id="reject" type="button">취소</button>
+    </div>
+    <p class="status" id="status"></p>
+  </main>
+  <script>
+    (() => {
+      const pendingRequests = new Map();
+      let nextRequestId = 1;
+      let state = null;
+      const title = document.getElementById("title");
+      const message = document.getElementById("message");
+      const actions = document.getElementById("actions");
+      const approve = document.getElementById("approve");
+      const reject = document.getElementById("reject");
+      const status = document.getElementById("status");
+
+      function request(method, params) {
+        const id = nextRequestId++;
+        window.parent.postMessage({ jsonrpc: "2.0", id, method, params }, "*");
+        return new Promise((resolve, rejectPromise) => {
+          pendingRequests.set(id, { resolve, reject: rejectPromise });
+        });
+      }
+
+      function unwrap(value) {
+        return value?.structuredContent ?? value?.result?.structuredContent ?? value;
+      }
+
+      function render(next) {
+        const data = unwrap(next);
+        if (!data || data.kind !== "workflow_confirmation") return;
+        state = data;
+        title.textContent = data.title || "승인 확인";
+        message.textContent = data.message || "진행 여부를 선택해 주세요.";
+        approve.textContent = data.approveLabel || "승인";
+        reject.textContent = data.rejectLabel || "취소";
+        const completed = data.status === "approved" || data.status === "rejected";
+        actions.hidden = completed;
+        status.className = "status";
+        status.textContent = data.status === "approved" ? "승인되었습니다." : data.status === "rejected" ? "취소되었습니다." : "";
+      }
+
+      async function callTool(name, args) {
+        if (window.openai?.callTool) return window.openai.callTool(name, args);
+        return request("tools/call", { name, arguments: args });
+      }
+
+      async function continueConversation(prompt) {
+        if (window.openai?.sendFollowUpMessage) {
+          return window.openai.sendFollowUpMessage({ prompt });
+        }
+        return request("ui/message", {
+          role: "user",
+          content: [{ type: "text", text: prompt }],
+        });
+      }
+
+      async function decide(decision) {
+        if (!state?.requestId) return;
+        approve.disabled = true;
+        reject.disabled = true;
+        status.className = "status";
+        status.textContent = "결정을 기록하는 중입니다…";
+        try {
+          const result = await callTool("submit_workflow_decision", {
+            requestId: state.requestId,
+            decision,
+          });
+          const data = unwrap(result);
+          if (result?.isError || data?.status === "unknown") throw new Error("승인 요청을 처리하지 못했습니다.");
+          render(data);
+          const prompt = decision === "approved" ? state.approvalPrompt : state.rejectionPrompt;
+          await continueConversation(prompt);
+        } catch (error) {
+          approve.disabled = false;
+          reject.disabled = false;
+          status.className = "status error";
+          status.textContent = error?.message || "결정을 처리하지 못했습니다. 채팅으로 답해 주세요.";
+        }
+      }
+
+      window.addEventListener("message", (event) => {
+        if (event.source !== window.parent) return;
+        const payload = event.data;
+        if (!payload || payload.jsonrpc !== "2.0") return;
+        if (payload.id !== undefined && pendingRequests.has(payload.id)) {
+          const pending = pendingRequests.get(payload.id);
+          pendingRequests.delete(payload.id);
+          if (payload.error) pending.reject(payload.error);
+          else pending.resolve(payload.result);
+          return;
+        }
+        if (payload.method === "ui/notifications/tool-result") render(payload.params);
+      }, { passive: true });
+
+      approve.addEventListener("click", () => decide("approved"));
+      reject.addEventListener("click", () => decide("rejected"));
+      render(window.openai?.toolOutput);
+    })();
+  </script>
+</body>
+</html>
