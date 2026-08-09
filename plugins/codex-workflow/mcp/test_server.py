@@ -1,4 +1,5 @@
 import importlib.util
+import json
 import unittest
 from pathlib import Path
 
@@ -27,6 +28,14 @@ class WorkflowConfirmationServerTest(unittest.TestCase):
         tools = server.handle_request({"jsonrpc": "2.0", "id": 2, "method": "tools/list"})
         names = {tool["name"] for tool in tools["result"]["tools"]}
         self.assertEqual(names, {"show_workflow_confirmation", "submit_workflow_decision"})
+
+    def test_plugin_mcp_config_uses_supported_wrapper(self):
+        config_path = SERVER_PATH.parent.parent / ".mcp.json"
+        config = json.loads(config_path.read_text(encoding="utf-8"))
+
+        self.assertIn("mcp_servers", config)
+        self.assertNotIn("mcpServers", config)
+        self.assertIn("workflow-confirmation", config["mcp_servers"])
 
     def test_approval_is_recorded_and_retry_is_idempotent(self):
         shown = server.show_workflow_confirmation({
