@@ -1,12 +1,23 @@
 # j-token-workflow-kit
 
-`j-token-workflow-kit`은 Codex가 저장소와 필요한 외부 자료를 먼저 조사한 뒤, 작업 성격에 맞는 승인 경계와 구현 경로를 선택하는 한국어 워크플로우 플러그인입니다.
+`j-token-workflow-kit`은 Codex가 저장소와 필요한 외부 자료를 먼저 조사한 뒤, 작업 성격에 맞는 승인 경계와 구현 경로를 선택하는 한국어 워크플로우 플러그인입니다. 플러그인 패키지는 Agent Plugins 1.0.0의 이식 가능한 표준 구조를 따릅니다.
 
 버전 1.5.0부터 열린 질문이 없는 이진 승인에는 Python MCP 서버가 제공하는 인라인 `승인`·`취소` 카드를 사용할 수 있습니다. 호스트가 MCP Apps UI를 렌더링하지 않으면 같은 도구 결과가 한국어 텍스트 승인 질문으로 폴백합니다.
 
-현재 플러그인 버전: `1.5.1`
+현재 플러그인 버전: `1.6.0`
 
 다이어그램은 실행 환경에 맞게 출력합니다. Codex Desktop에서는 Mermaid를 사용하고, Codex CLI에서는 Mermaid를 `text` 코드 블록 안의 ASCII 다이어그램으로 대체합니다.
+
+## 1.6.0에서 달라진 점
+
+- 플러그인 루트의 `plugin.json`, `mcp.json`, `skills/` 고정 위치를 사용하는 Agent Plugins 1.0.0 표준으로 전체 마이그레이션했습니다.
+- 레거시 Codex 전용 `.codex-plugin/plugin.json`과 `.mcp.json`을 제거했습니다.
+- 매니페스트에서 구성 요소 경로를 직접 선언하지 않고 표준 클라이언트가 고정 위치에서 스킬과 MCP 서버를 발견하도록 변경했습니다.
+- 모든 `SKILL.md`의 Agent Skills 핵심 계약과 두 표준 JSON 문서의 회귀 검증을 추가했습니다.
+
+## 호환성
+
+1.6.0은 Agent Plugins 표준 전용 패키지입니다. `.codex-plugin/plugin.json`과 `.mcp.json`만 인식하는 레거시 Codex 플러그인 로더와는 호환되지 않습니다. `.agents/plugins/marketplace.json`은 저장소 배포 카탈로그로 유지하지만, 실제 설치 호스트가 Agent Plugins 1.0.0의 루트 매니페스트를 지원해야 합니다.
 
 ## 1.5.1에서 달라진 점
 
@@ -177,8 +188,8 @@ $research-experiment-workflow를 사용해 이 가설을 조사하고 실행 전
 
 ```text
 .agents/plugins/marketplace.json
-plugins/codex-workflow/.codex-plugin/plugin.json
-plugins/codex-workflow/.mcp.json
+plugins/codex-workflow/plugin.json
+plugins/codex-workflow/mcp.json
 plugins/codex-workflow/mcp/server.py
 plugins/codex-workflow/mcp/approval.html
 plugins/codex-workflow/skills/
