@@ -1,6 +1,6 @@
 {
   "name": "codex-workflow",
-  "version": "1.5.0",
+  "version": "1.5.1",
   "description": "사용자 의도를 먼저 판별하고, 제품·기능·연구 실험·버그에 맞는 서로 다른 승인 흐름을 적용하는 한국어 워크플로우입니다.",
   "author": {
     "name": "j-token",

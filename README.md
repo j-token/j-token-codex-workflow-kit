@@ -4,9 +4,14 @@
 
 버전 1.5.0부터 열린 질문이 없는 이진 승인에는 Python MCP 서버가 제공하는 인라인 `승인`·`취소` 카드를 사용할 수 있습니다. 호스트가 MCP Apps UI를 렌더링하지 않으면 같은 도구 결과가 한국어 텍스트 승인 질문으로 폴백합니다.
 
-현재 플러그인 버전: `1.5.0`
+현재 플러그인 버전: `1.5.1`
 
 다이어그램은 실행 환경에 맞게 출력합니다. Codex Desktop에서는 Mermaid를 사용하고, Codex CLI에서는 Mermaid를 `text` 코드 블록 안의 ASCII 다이어그램으로 대체합니다.
+
+## 1.5.1에서 달라진 점
+
+- 번들 MCP 서버 설정의 래퍼를 Codex가 지원하는 `mcp_servers`로 수정해 `show_workflow_confirmation`과 `submit_workflow_decision`이 도구 목록에 등록되도록 했습니다.
+- 잘못된 `mcpServers` 래퍼가 다시 들어오지 않도록 MCP 설정 회귀 테스트를 추가했습니다.
 
 ## 1.5.0에서 달라진 점
 
