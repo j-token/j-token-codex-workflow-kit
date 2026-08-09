@@ -1,0 +1,38 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "codex-workflow",
+  "version": "1.6.0",
+  "description": "사용자 의도를 먼저 판별하고, 제품·기능·연구 실험·버그에 맞는 서로 다른 승인 흐름을 적용하는 한국어 워크플로우입니다.",
+  "author": {
+    "name": "j-token",
+    "email": "j-token@example.com",
+    "url": "https://github.com/j-token"
+  },
+  "homepage": "https://github.com/j-token/j-token-workflow-kit",
+  "repository": "https://github.com/j-token/j-token-workflow-kit",
+  "license": "Apache-2.0",
+  "keywords": [
+    "workflow",
+    "intent",
+    "explanation",
+    "research",
+    "experiment",
+    "benchmark",
+    "ablation",
+    "prompt",
+    "chatgpt-app",
+    "markdown-review",
+    "spec",
+    "prd",
+    "technical-spec",
+    "spec-audit",
+    "debugging",
+    "figma",
+    "model-selection",
+    "reasoning-effort",
+    "implementation-thread",
+    "codex",
+    "subagents",
+    "orchestration"
+  ]
+}

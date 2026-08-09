@@ -13,7 +13,7 @@ from typing import Any
 
 
 SERVER_NAME = "codex-workflow-confirmation"
-SERVER_VERSION = "1.0.0"
+SERVER_VERSION = "1.6.0"
 PROTOCOL_VERSION = "2025-11-25"
 WIDGET_URI = "ui://codex-workflow/confirmation-v1.html"
 WIDGET_PATH = Path(__file__).with_name("approval.html")

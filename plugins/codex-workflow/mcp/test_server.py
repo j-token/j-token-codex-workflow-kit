@@ -5,6 +5,9 @@ from pathlib import Path
 
 
 SERVER_PATH = Path(__file__).with_name("server.py")
+PLUGIN_ROOT = SERVER_PATH.parent.parent
+PLUGIN_SCHEMA = "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json"
+MCP_SCHEMA = "https://agent-plugins.org/schemas/1.0.0/mcp.schema.json"
 SPEC = importlib.util.spec_from_file_location("workflow_confirmation_server", SERVER_PATH)
 server = importlib.util.module_from_spec(SPEC)
 assert SPEC.loader is not None
@@ -23,19 +26,69 @@ class WorkflowConfirmationServerTest(unittest.TestCase):
             "params": {"protocolVersion": "2025-11-25"},
         })
         self.assertEqual(initialized["result"]["serverInfo"]["name"], server.SERVER_NAME)
+        self.assertEqual(initialized["result"]["serverInfo"]["version"], "1.6.0")
         self.assertIn("모든 파일 수정", initialized["result"]["instructions"])
 
         tools = server.handle_request({"jsonrpc": "2.0", "id": 2, "method": "tools/list"})
         names = {tool["name"] for tool in tools["result"]["tools"]}
         self.assertEqual(names, {"show_workflow_confirmation", "submit_workflow_decision"})
 
-    def test_plugin_mcp_config_uses_supported_wrapper(self):
-        config_path = SERVER_PATH.parent.parent / ".mcp.json"
+    def test_plugin_manifest_uses_agent_plugins_schema(self):
+        manifest = json.loads((PLUGIN_ROOT / "plugin.json").read_text(encoding="utf-8"))
+
+        self.assertEqual(manifest["$schema"], PLUGIN_SCHEMA)
+        self.assertEqual(manifest["name"], "codex-workflow")
+        self.assertEqual(manifest["version"], "1.6.0")
+        self.assertLessEqual(
+            set(manifest),
+            {
+                "$schema", "name", "version", "description", "author",
+                "homepage", "repository", "license", "keywords", "extensions",
+            },
+        )
+        self.assertFalse((PLUGIN_ROOT / ".codex-plugin" / "plugin.json").exists())
+
+    def test_plugin_mcp_config_uses_agent_plugins_schema(self):
+        config_path = PLUGIN_ROOT / "mcp.json"
         config = json.loads(config_path.read_text(encoding="utf-8"))
 
-        self.assertIn("mcp_servers", config)
-        self.assertNotIn("mcpServers", config)
-        self.assertIn("workflow-confirmation", config["mcp_servers"])
+        self.assertEqual(set(config), {"$schema", "mcpServers"})
+        self.assertEqual(config["$schema"], MCP_SCHEMA)
+        workflow_server = config["mcpServers"]["workflow-confirmation"]
+        self.assertEqual(workflow_server["type"], "stdio")
+        self.assertEqual(workflow_server["command"], "python")
+        self.assertEqual(workflow_server["args"], ["${PLUGIN_ROOT}/mcp/server.py"])
+        self.assertEqual(workflow_server["cwd"], "${PLUGIN_ROOT}")
+        self.assertFalse((PLUGIN_ROOT / ".mcp.json").exists())
+
+    def test_all_skills_follow_agent_skills_core_contract(self):
+        allowed_fields = {
+            "name", "description", "license", "compatibility", "metadata", "allowed-tools",
+        }
+        skill_paths = sorted((PLUGIN_ROOT / "skills").glob("*/SKILL.md"))
+
+        self.assertTrue(skill_paths)
+        for skill_path in skill_paths:
+            with self.subTest(skill=skill_path.parent.name):
+                text = skill_path.read_text(encoding="utf-8")
+                self.assertTrue(text.startswith("---\n"))
+                _, frontmatter, body = text.split("---", 2)
+                fields = {}
+                for line in frontmatter.splitlines():
+                    if line and not line[0].isspace():
+                        key, separator, value = line.partition(":")
+                        self.assertEqual(separator, ":")
+                        self.assertIn(key, allowed_fields)
+                        fields[key] = value.strip()
+
+                name = fields.get("name", "")
+                description = fields.get("description", "")
+                self.assertRegex(name, r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
+                self.assertLessEqual(len(name), 64)
+                self.assertEqual(name, skill_path.parent.name)
+                self.assertGreaterEqual(len(description), 1)
+                self.assertLessEqual(len(description), 1024)
+                self.assertTrue(body.strip())
 
     def test_approval_is_recorded_and_retry_is_idempotent(self):
         shown = server.show_workflow_confirmation({

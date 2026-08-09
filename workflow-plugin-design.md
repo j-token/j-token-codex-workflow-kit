@@ -1,4 +1,10 @@
-# Codex 워크플로우 플러그인 1.5.0 설계
+# Codex 워크플로우 플러그인 1.6.0 설계
+
+## 패키지 표준
+
+1.6.0은 Agent Plugins 1.0.0을 대상으로 한다. 플러그인 루트의 `plugin.json`이 패키지 식별과 버전을 선언하고, `skills/`와 `mcp.json`은 표준 고정 위치에서 발견된다. 레거시 Codex 전용 `.codex-plugin/plugin.json`과 `.mcp.json`은 사용하지 않는다.
+
+`plugin.json`에는 이식 가능한 핵심 메타데이터만 둔다. 클라이언트 전용 표시 정보와 구성 요소 경로는 표준 최상위 필드가 아니므로 선언하지 않는다. MCP 서버는 `mcp.json`의 `mcpServers` 아래에서 `stdio` 전송을 명시하며, `${PLUGIN_ROOT}`를 사용해 설치 위치와 무관하게 서버 파일을 찾는다.
 
 ## 배경
 

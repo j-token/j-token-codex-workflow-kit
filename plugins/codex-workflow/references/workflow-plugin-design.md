@@ -1,6 +1,8 @@
-# Codex 워크플로우 플러그인 1.5.0 설계 참조
+# Codex 워크플로우 플러그인 1.6.0 설계 참조
 
 저장소 루트의 `workflow-plugin-design.md`가 현재 권위 설계 문서다. `prompt-document-management.md`는 1.0.0에서 채택했던 단일 프롬프트 문서 방식의 역사적 조사 자료이며 현재 실행 계약이 아니다.
+
+플러그인 패키지는 Agent Plugins 1.0.0의 루트 `plugin.json`, `mcp.json`, `skills/` 고정 위치를 사용한다. `.codex-plugin/plugin.json`과 `.mcp.json`은 1.5.1까지 사용한 레거시 구조이며 현재 패키지에 포함하지 않는다.
 
 ## 핵심 계약
 
